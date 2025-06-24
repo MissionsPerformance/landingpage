@@ -44,25 +44,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Contact form handling
     const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData(this);
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const message = formData.get('message');
-            
-            // Simple validation
-            if (name && email && message) {
-                alert('Thank you for your message! We will get back to you soon.');
-                this.reset();
-            } else {
-                alert('Please fill in all fields.');
-            }
+    contactForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(contactForm);
+
+    fetch(contactForm.action, {
+      method: 'POST',
+      body: formData,
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(response => {
+      if (response.ok) {
+        showToast(
+          "Thank you for reaching out!",
+          "I’ll get back to you within 24 hours."
+        );
+        contactForm.reset();
+      } else {
+        return response.json().then(data => {
+          showToast(
+            "Oops—something went wrong.",
+            data.error || "Please try again later."
+          );
         });
-    }
+      }
+    })
+    .catch(() => {
+      showToast(
+        "Network error.",
+        "Please check your connection and try again."
+      );
+    });
+  });
+});
+
+// Toast notification system
+function showToast(title, description) {
+    const toast = document.getElementById('toast');
+    const toastTitle = toast.querySelector('.toast-title');
+    const toastDescription = toast.querySelector('.toast-description');
+    
+    toastTitle.textContent = title;
+    toastDescription.textContent = description;
+    
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 4000);
+}
     
     // Header scroll effect
     const header = document.querySelector('.header');
