@@ -495,3 +495,35 @@ html {
 .text-center {
     text-align: center;
 }
+
+/* Toast */
+.toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    z-index: 1000;
+    max-width: 20rem;
+    transition: all 0.3s ease;
+}
+
+.toast.hidden {
+    opacity: 0;
+    transform: translateX(100%);
+    pointer-events: none;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.toast-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
