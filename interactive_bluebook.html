@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UN Bluebook Interactive Charts</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #controls { margin-bottom: 20px; }
+    label { margin-right: 15px; }
+    .metric-checkbox { margin-right: 5px; }
+    #tabs { margin-bottom: 10px; }
+    .tab-button { padding: 10px 20px; margin-right: 5px; cursor: pointer; }
+    .tab-button.active { background-color: #007bff; color: white; border: none; }
+    #chart, #table-container { margin-top: 10px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h1>UN Bluebook Data Visualization</h1>
+  <div id="controls">
+    <label>Metrics:</label>
+    <label><input type="checkbox" class="metric-checkbox" value="Female Count" checked>Female Count</label>
+    <label><input type="checkbox" class="metric-checkbox" value="Male Count" checked>Male Count</label>
+    <label><input type="checkbox" class="metric-checkbox" value="Female Percent">Female %</label>
+    <label><input type="checkbox" class="metric-checkbox" value="Male Percent">Male %</label>
+
+    <label for="groupSelect">Group:</label>
+    <select id="groupSelect"><option value="All">All</option></select>
+
+    <label for="displaySelect">Show:</label>
+    <select id="displaySelect">
+      <option value="All">All</option>
+      <option value="Top">Top</option>
+      <option value="Bottom">Bottom</option>
+    </select>
+
+    <label for="numInput">N:</label>
+    <input type="number" id="numInput" value="10" min="1" style="width:60px;">
+
+    <label for="searchInput">Search:</label>
+    <input type="text" id="searchInput" placeholder="Country name">
+  </div>
+
+  <div id="tabs">
+    <button id="tab-chart" class="tab-button active">Chart</button>
+    <button id="tab-table" class="tab-button">Table</button>
+  </div>
+
+  <div id="chart" style="width:100%;height:600px;"></div>
+  <div id="table-container" style="display:none;"></div>
+
+  <script>
+    d3.csv('UN_Bluebook_Data.csv').then(data => {
+      data.forEach(d => {
+        d['Female Count'] = +d['Female Count'];
+        d['Male Count'] = +d['Male Count'];
+        d['Total Count'] = +d['Total Count'];
+        d['Female Percent'] = +d['Female Percent'].replace('%','');
+        d['Male Percent'] = +d['Male Percent'].replace('%','');
+      });
+
+      // Populate group filter
+      const groupSelect = d3.select('#groupSelect');
+      Array.from(new Set(data.map(d => d.Group))).sort()
+        .forEach(g => groupSelect.append('option').attr('value', g).text(g));
+
+      // Tab switching
+      document.getElementById('tab-chart').onclick = () => switchTab('chart');
+      document.getElementById('tab-table').onclick = () => switchTab('table');
+
+      // Listeners
+      d3.selectAll('.metric-checkbox, #groupSelect, #displaySelect, #numInput, #searchInput')
+        .on('change keyup', updateAll);
+
+      updateAll();
+
+      function updateAll() {
+        const filtered = getFilteredData();
+        drawChart(filtered);
+        drawTable(filtered);
+      }
+
+      function getFilteredData() {
+        const group = d3.select('#groupSelect').property('value');
+        const mode = d3.select('#displaySelect').property('value');
+        const n = +d3.select('#numInput').property('value');
+        const searchTerm = d3.select('#searchInput').property('value').toLowerCase();
+
+        let fd = data.filter(d => (group==='All'||d.Group===group))
+                     .filter(d => d.Country.toLowerCase().includes(searchTerm));
+        // Sort by total count descending
+        fd.sort((a,b) => b['Total Count'] - a['Total Count']);
+        if (mode==='Top') fd = fd.slice(0,n);
+        if (mode==='Bottom') fd = fd.slice(-n);
+        return fd;
+      }
+
+      function drawChart(filtered) {
+        const metrics = Array.from(document.querySelectorAll('.metric-checkbox'))
+          .filter(cb => cb.checked)
+          .map(cb => cb.value);
+        if (!metrics.length) {
+          Plotly.purge('chart');
+          return;
+        }
+        const countries = filtered.map(d => d.Country).reverse();
+        const traces = metrics.map(m => ({
+          x: filtered.map(d=> d[m]).reverse(),
+          y: countries,
+          name: m,
+          type: 'bar', orientation: 'h'
+        }));
+        const layout = { title: metrics.join(' + ')+' by Country', barmode: 'stack', margin:{ l:150, r:30, t:50, b:50 }};
+        Plotly.newPlot('chart', traces, layout, {responsive:true});
+      }
+
+      function drawTable(filtered) {
+        const container = document.getElementById('table-container');
+        container.innerHTML = '';
+        const table = document.createElement('table');
+        const header = table.insertRow();
+        ['Country','Group','Female Count','Male Count','Total Count','Female Percent','Male Percent']
+          .forEach(h => header.insertCell().outerHTML = `<th>${h}</th>`);
+        filtered.forEach(d => {
+          const row = table.insertRow();
+          row.insertCell().innerText = d.Country;
+          row.insertCell().innerText = d.Group;
+          row.insertCell().innerText = d['Female Count'];
+          row.insertCell().innerText = d['Male Count'];
+          row.insertCell().innerText = d['Total Count'];
+          row.insertCell().innerText = d['Female Percent']+'%';
+          row.insertCell().innerText = d['Male Percent']+'%';
+        });
+        container.appendChild(table);
+      }
+
+      function switchTab(tab) {
+        document.getElementById('tab-chart').classList.toggle('active', tab==='chart');
+        document.getElementById('tab-table').classList.toggle('active', tab==='table');
+        document.getElementById('chart').style.display = (tab==='chart'?'block':'none');
+        document.getElementById('table-container').style.display = (tab==='table'?'block':'none');
+      }
+    }).catch(error => console.error('Error loading CSV:', error));
+  </script>
+</body>
+</html>
