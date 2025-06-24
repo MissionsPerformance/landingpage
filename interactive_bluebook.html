@@ -3,149 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UN Bluebook Interactive Charts</title>
+  <title>UN Bluebook Data Visualization</title>
+  <!-- Libraries -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    #controls { margin-bottom: 20px; }
-    label { margin-right: 15px; }
-    .metric-checkbox { margin-right: 5px; }
+    #controls { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
+    .control-group { display: flex; flex-direction: column; }
+    .control-group label { font-weight: bold; margin-bottom: 5px; }
+    #metricSelect { width: 200px; height: 100px; }
+    .color-picker { display: flex; align-items: center; margin-bottom: 5px; }
+    .color-picker label { margin-right: 10px; }
     #tabs { margin-bottom: 10px; }
-    .tab-button { padding: 10px 20px; margin-right: 5px; cursor: pointer; }
-    .tab-button.active { background-color: #007bff; color: white; border: none; }
-    #chart, #table-container { margin-top: 10px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background-color: #f2f2f2; }
+    .tab-button { padding: 8px 16px; margin-right: 5px; cursor: pointer; border: 1px solid #ccc; background: #f9f9f9; border-radius: 4px; }
+    .tab-button.active { background-color: #007bff; color: #fff; border-color: #007bff; }
+    #chart, #table-container, #map { margin-top: 10px; }
+    .dataTables_wrapper { width: 100%; }
+    #advanced { border: 1px solid #ddd; border-radius: 4px; padding: 10px; max-width: 400px; }
+    #advanced h4 { margin: 0 0 10px; cursor: pointer; }
+    #advanced-content { display: none; }
   </style>
 </head>
 <body>
-  <h1>UN Bluebook Data Visualization</h1>
+  <h1>UN Bluebook Data Visualization 🎉</h1>
+
   <div id="controls">
-    <label>Metrics:</label>
-    <label><input type="checkbox" class="metric-checkbox" value="Female Count" checked>Female Count</label>
-    <label><input type="checkbox" class="metric-checkbox" value="Male Count" checked>Male Count</label>
-    <label><input type="checkbox" class="metric-checkbox" value="Female Percent">Female %</label>
-    <label><input type="checkbox" class="metric-checkbox" value="Male Percent">Male %</label>
+    <div class="control-group">
+      <label for="metricSelect">Select Metrics</label>
+      <select id="metricSelect" multiple>
+        <option value="Female Count" selected>Female Count</option>
+        <option value="Male Count" selected>Male Count</option>
+        <option value="Female Percent">Female %</option>
+        <option value="Male Percent">Male %</option>
+      </select>
+    </div>
 
-    <label for="groupSelect">Group:</label>
-    <select id="groupSelect"><option value="All">All</option></select>
+    <div class="control-group">
+      <label>Metric Colors</label>
+      <div id="colorPickers"></div>
+    </div>
 
-    <label for="displaySelect">Show:</label>
-    <select id="displaySelect">
-      <option value="All">All</option>
-      <option value="Top">Top</option>
-      <option value="Bottom">Bottom</option>
-    </select>
+    <div class="control-group">
+      <label for="chartTypeSelect">Chart Type</label>
+      <select id="chartTypeSelect">
+        <option value="stack">Stacked Bar</option>
+        <option value="group">Grouped Bar</option>
+        <option value="percent">100% Stacked</option>
+        <option value="pie">Pie (Top N Total)</option>
+      </select>
+    </div>
 
-    <label for="numInput">N:</label>
-    <input type="number" id="numInput" value="10" min="1" style="width:60px;">
-
-    <label for="searchInput">Search:</label>
-    <input type="text" id="searchInput" placeholder="Country name">
+    <div id="advanced" class="control-group">
+      <h4>Advanced Options &#9662;</h4>
+      <div id="advanced-content">
+        <label for="groupSelect">Region Group</label>
+        <select id="groupSelect"><option value="All">All</option></select>
+        <label for="displaySelect">Show</label>
+        <select id="displaySelect">
+          <option value="All">All</option>
+          <option value="Top">Top</option>
+          <option value="Bottom">Bottom</option>
+        </select>
+        <label for="numInput">N</label>
+        <input type="number" id="numInput" value="10" min="1" style="width:60px;">
+        <label for="searchInput">Search Country</label>
+        <input type="text" id="searchInput" placeholder="e.g. France">
+        <button id="downloadCsv">Download CSV</button>
+      </div>
+    </div>
   </div>
 
   <div id="tabs">
-    <button id="tab-chart" class="tab-button active">Chart</button>
-    <button id="tab-table" class="tab-button">Table</button>
+    <button id="tab-chart" class="tab-button active">📊 Chart</button>
+    <button id="tab-table" class="tab-button">📋 Table</button>
+    <button id="tab-map"  class="tab-button">🗺️ Map</button>
   </div>
 
   <div id="chart" style="width:100%;height:600px;"></div>
-  <div id="table-container" style="display:none;"></div>
+  <div id="table-container" style="display:none;"><table id="data-table" class="display"></table></div>
+  <div id="map" style="display:none;width:100%;height:600px;"></div>
 
   <script>
     d3.csv('UN_Bluebook_Data.csv').then(data => {
       data.forEach(d => {
-        d['Female Count'] = +d['Female Count'];
-        d['Male Count'] = +d['Male Count'];
-        d['Total Count'] = +d['Total Count'];
+        d['Female Count']   = +d['Female Count'];
+        d['Male Count']     = +d['Male Count'];
+        d['Total Count']    = +d['Total Count'];
         d['Female Percent'] = +d['Female Percent'].replace('%','');
-        d['Male Percent'] = +d['Male Percent'].replace('%','');
+        d['Male Percent']   = +d['Male Percent'].replace('%','');
       });
 
-      // Populate group filter
       const groupSelect = d3.select('#groupSelect');
       Array.from(new Set(data.map(d => d.Group))).sort()
         .forEach(g => groupSelect.append('option').attr('value', g).text(g));
 
-      // Tab switching
-      document.getElementById('tab-chart').onclick = () => switchTab('chart');
-      document.getElementById('tab-table').onclick = () => switchTab('table');
+      $('#advanced h4').click(() => {
+        const content = $('#advanced-content');
+        content.slideToggle();
+        $('#advanced h4').html(
+          `Advanced Options ${content.is(':visible')?'&#9652;':'&#9662;'}`
+        );
+      });
 
-      // Listeners
-      d3.selectAll('.metric-checkbox, #groupSelect, #displaySelect, #numInput, #searchInput')
-        .on('change keyup', updateAll);
+      const defaultColors = {
+        'Female Count': '#ff69b4',
+        'Male Count':   '#1f77b4',
+        'Female Percent': '#2ca02c',
+        'Male Percent':   '#d62728'
+      };
 
-      updateAll();
-
-      function updateAll() {
-        const filtered = getFilteredData();
-        drawChart(filtered);
-        drawTable(filtered);
+      function renderColorPickers() {
+        const container = d3.select('#colorPickers').html('');
+        const metrics = Array.from($('#metricSelect').prop('selectedOptions')).map(o => o.value);
+        metrics.forEach(m => {
+          const div = container.append('div').attr('class', 'color-picker');
+          div.append('label').text(m);
+          div.append('input')
+            .attr('type', 'color')
+            .attr('data-metric', m)
+            .attr('value', defaultColors[m] || '#000000');
+        });
       }
 
-      function getFilteredData() {
-        const group = d3.select('#groupSelect').property('value');
-        const mode = d3.select('#displaySelect').property('value');
-        const n = +d3.select('#numInput').property('value');
-        const searchTerm = d3.select('#searchInput').property('value').toLowerCase();
+      renderColorPickers();
+      $('#metricSelect').change(renderColorPickers);
+      $('#controls select, #controls input, #controls button').on('change keyup', updateAll);
 
-        let fd = data.filter(d => (group==='All'||d.Group===group))
-                     .filter(d => d.Country.toLowerCase().includes(searchTerm));
-        // Sort by total count descending
-        fd.sort((a,b) => b['Total Count'] - a['Total Count']);
-        if (mode==='Top') fd = fd.slice(0,n);
-        if (mode==='Bottom') fd = fd.slice(-n);
+      let currentTab = 'chart', tableInit = false;
+      function switchTab(tab) {
+        currentTab = tab;
+        $('.tab-button').removeClass('active');
+        $('#tab-' + tab).addClass('active');
+        $('#chart').toggle(tab === 'chart');
+        $('#table-container').toggle(tab === 'table');
+        $('#map').toggle(tab === 'map');
+        updateAll();
+      }
+      $('#tab-chart').click(() => switchTab('chart'));
+      $('#tab-table').click(() => switchTab('table'));
+      $('#tab-map').click(() => switchTab('map'));
+
+      $('#downloadCsv').click(() => {
+        const blob = new Blob([d3.csvFormat(getFilteredData())], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        $('<a>').attr({ href: url, download: 'bluebook_filtered.csv' })[0].click();
+        URL.revokeObjectURL(url);
+      });
+
+      function getFilteredData() {
+        let fd = data;
+        const group = $('#groupSelect').val();
+        if (group !== 'All') fd = fd.filter(d => d.Group === group);
+        const term = $('#searchInput').val().toLowerCase();
+        if (term) fd = fd.filter(d => d.Country.toLowerCase().includes(term));
+        // Sort by Total Count descending
+        fd.sort((a, b) => b['Total Count'] - a['Total Count']);
+        const mode = $('#displaySelect').val(), n = +$('#numInput').val();
+        if (mode === 'Top') fd = fd.slice(0, n);
+        if (mode === 'Bottom') fd = fd.slice(-n);
         return fd;
       }
 
-      function drawChart(filtered) {
-        const metrics = Array.from(document.querySelectorAll('.metric-checkbox'))
-          .filter(cb => cb.checked)
-          .map(cb => cb.value);
-        if (!metrics.length) {
-          Plotly.purge('chart');
-          return;
-        }
-        const countries = filtered.map(d => d.Country).reverse();
+      function updateAll() {
+        const fd = getFilteredData();
+        if (currentTab === 'chart') drawChart(fd);
+        if (currentTab === 'table') drawTable(fd);
+        if (currentTab === 'map') drawMap(fd);
+      }
+
+      function drawChart(fd) {
+        const metrics = Array.from($('#metricSelect').prop('selectedOptions')).map(o => o.value);
+        const chartType = $('#chartTypeSelect').val();
+        if (!metrics.length) { Plotly.purge('chart'); return; }
+        // Countries sorted by total count, largest at top
+        const countries = fd.map(d => d.Country);
         const traces = metrics.map(m => ({
-          x: filtered.map(d=> d[m]).reverse(),
-          y: countries,
-          name: m,
-          type: 'bar', orientation: 'h'
+          x: fd.map(d => d[m]), y: countries, name: m,
+          type: 'bar', orientation: 'h', marker: { color: $(`[data-metric='${m}']`).val() }
         }));
-        const layout = { title: metrics.join(' + ')+' by Country', barmode: 'stack', margin:{ l:150, r:30, t:50, b:50 }};
-        Plotly.newPlot('chart', traces, layout, {responsive:true});
+        const layout = {
+          title: metrics.join(' + ') + ' by Country',
+          margin: { l:150, r:30, t:50, b:50 },
+          yaxis: { autorange: 'reversed' }
+        };
+        if (chartType === 'stack') layout.barmode = 'stack';
+        if (chartType === 'group') layout.barmode = 'group';
+        if (chartType === 'percent') { layout.barmode = 'stack'; layout.barnorm = 'percent'; }
+        if (chartType === 'pie') {
+          const labels = fd.map(d => d.Country), values = fd.map(d => d['Total Count']);
+          Plotly.newPlot('chart', [{ labels, values, type: 'pie' }], { title: 'Top N Total Count' }, { responsive: true });
+        } else {
+          Plotly.newPlot('chart', traces, layout, { responsive: true });
+        }
       }
 
-      function drawTable(filtered) {
-        const container = document.getElementById('table-container');
-        container.innerHTML = '';
-        const table = document.createElement('table');
-        const header = table.insertRow();
-        ['Country','Group','Female Count','Male Count','Total Count','Female Percent','Male Percent']
-          .forEach(h => header.insertCell().outerHTML = `<th>${h}</th>`);
-        filtered.forEach(d => {
-          const row = table.insertRow();
-          row.insertCell().innerText = d.Country;
-          row.insertCell().innerText = d.Group;
-          row.insertCell().innerText = d['Female Count'];
-          row.insertCell().innerText = d['Male Count'];
-          row.insertCell().innerText = d['Total Count'];
-          row.insertCell().innerText = d['Female Percent']+'%';
-          row.insertCell().innerText = d['Male Percent']+'%';
-        });
-        container.appendChild(table);
+      function drawTable(fd) {
+        const cols = ['Country','Group','Female Count','Male Count','Total Count','Female Percent','Male Percent'];
+        const arr = fd.map(d => cols.map(c => d[c]));
+        if (!tableInit) {
+          $('#data-table').DataTable({ data: arr, columns: cols.map(c => ({ title: c })) });
+          tableInit = true;
+        } else {
+          const dt = $('#data-table').DataTable(); dt.clear(); dt.rows.add(arr).draw();
+        }
       }
 
-      function switchTab(tab) {
-        document.getElementById('tab-chart').classList.toggle('active', tab==='chart');
-        document.getElementById('tab-table').classList.toggle('active', tab==='table');
-        document.getElementById('chart').style.display = (tab==='chart'?'block':'none');
-        document.getElementById('table-container').style.display = (tab==='table'?'block':'none');
+      function drawMap(fd) {
+        const metrics = Array.from($('#metricSelect').prop('selectedOptions')).map(o => o.value);
+        if (!metrics.length) { Plotly.purge('map'); return; }
+        const m = metrics[0];
+        const locs = fd.map(d => d.Country), z = fd.map(d => d[m]);
+        Plotly.newPlot('map', [{ type: 'choropleth', locations: locs, locationmode: 'country names', z,
+          colorscale: 'Blues', marker: { line: { color: 'white', width: 0.5 } } }],
+          { title: m + ' by Country', geo: { projection: { type: 'equirectangular' } } }, { responsive: true });
       }
-    }).catch(error => console.error('Error loading CSV:', error));
+
+      // Initial render sorted by Total Count
+      updateAll();
+    }).catch(err => console.error(err));
   </script>
 </body>
 </html>
