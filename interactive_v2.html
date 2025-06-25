@@ -361,7 +361,7 @@
                     allData = countryData.map(d => {
                         const femaleCount = +d['Female Count'] || 0;
                         const totalCount = +d['Total Count'] || 0;
-                        const maleCount = +d['Male Count'] || 0;
+                        const maleCount = totalCount - femaleCount; // Calculate male count
                         const femalePercent = totalCount > 0 ? (femaleCount / totalCount) * 100 : 0;
                         const malePercent = totalCount > 0 ? (maleCount / totalCount) * 100 : 0;
                         
@@ -833,7 +833,7 @@
             
             // --- Spotlight Modal Functions ---
             function createStatRow(label, value, icon = null) {
-                if (!value || value.trim() === '') return '';
+                if (!value || String(value).trim() === '') return '';
                 const iconHtml = icon ? `<i data-lucide="${icon}" class="w-4 h-4 mr-2 text-gray-500"></i>` : '';
                 return `
                     <div class="flex justify-between items-start text-sm py-1">
@@ -853,7 +853,7 @@
                     </div>
                 `;
             }
-            
+
             function showSpotlight(countryName, activeTab = 'overview') {
                 const countryData = allData.find(d => d.Country === countryName);
                 if (!countryData) return;
@@ -866,6 +866,15 @@
                 const countryCode = countryCodeMap[countryData.Country] || '';
                 const flagHtml = countryCode ? `<span class="fi fi-${countryCode} fis rounded-md shadow-md mr-4" style="width: 40px; height: 30px; display: inline-block;"></span>` : '';
                 titleElement.innerHTML = `${flagHtml}<span>${countryData.Country}</span>`;
+                
+                // Helper to format URLs for external links
+                const formatExternalUrl = (url) => {
+                    if (!url || url.trim() === '') return '#';
+                    if (url.startsWith('http://') || url.startsWith('https://')) {
+                        return url;
+                    }
+                    return `https://${url}`;
+                }
                 
                 // --- Populate Overview Tab ---
                 const statsUnContainer = document.getElementById('spotlight-stats-un');
@@ -895,9 +904,9 @@
                     ${createStatRow('Fax', countryData.MC_Telefax, 'printer')}
                     ${createStatRow('Membership Date', countryData.MC_MembershipDate, 'calendar')}
                     ${createStatRow('National Holiday', countryData.MC_Holiday, 'cake')}
-                    ${createLinkRow('Website', countryData.MC_WebSite, countryData.MC_WebSite, 'external-link')}
-                    ${createLinkRow('Social Media', countryData.MC_SocialMedia, countryData.MC_SocialMedia, 'at-sign')}
-                    ${createLinkRow('Email', countryData.MC_eMail, 'mailto:' + countryData.MC_eMail, 'mail')}
+                    ${createLinkRow('Website', countryData.MC_WebSite, formatExternalUrl(countryData.MC_WebSite), 'external-link')}
+                    ${createLinkRow('Social Media', countryData.MC_SocialMedia, formatExternalUrl(countryData.MC_SocialMedia), 'at-sign')}
+                    ${createLinkRow('Email', countryData.MC_eMail, `mailto:${countryData.MC_eMail}`, 'mail')}
                     ${createStatRow('UN Correspondence', countryData.MC_UNCorrespondenceLanguage, 'languages')}
                 `;
 
