@@ -961,33 +961,34 @@
             // --- Insights Function ---
             function updateInsights() {
                 if (allData.length === 0) return;
-                
                 const insights = [];
-                // Filter out entries with no personnel for insights calculation
                 const activeCountries = allData.filter(d => d['Total Count'] > 0);
-                if(activeCountries.length === 0) {
-                    document.getElementById('insight-text').innerHTML = "No personnel data available to generate insights.";
-                    return;
-                }
-
-                // Insight 1: Region with most personnel
+                if(activeCountries.length === 0) { document.getElementById('insight-text').innerHTML = "No personnel data to generate insights."; return; }
                 const personnelByRegion = d3.rollup(activeCountries, v => d3.sum(v, d => d['Total Count']), d => d.Group);
                 const topRegion = Array.from(personnelByRegion.entries()).sort((a,b) => b[1] - a[1])[0];
                 insights.push(`The <strong>${topRegion[0]}</strong> region contributes the most personnel, with a total of <strong>${topRegion[1].toLocaleString()}</strong>.`);
-
-                // Insight 2: Country with highest female percentage
                 const topFemalePercent = activeCountries.reduce((prev, current) => (prev['Female Percent'] > current['Female Percent']) ? prev : current);
-                if(topFemalePercent) {
-                    insights.push(`<strong>${topFemalePercent.Country}</strong> has one of the highest percentages of female contributors, at <strong>${topFemalePercent['Female Percent'].toFixed(1)}%</strong>.`);
-                }
-
-                // Insight 3: Country with most personnel
+                if(topFemalePercent) insights.push(`<strong>${topFemalePercent.Country}</strong> has one of the highest percentages of female contributors, at <strong>${topFemalePercent['Female Percent'].toFixed(1)}%</strong>.`);
                 const topContributor = activeCountries.reduce((prev, current) => (prev['Total Count'] > current['Total Count']) ? prev : current);
                 insights.push(`<strong>${topContributor.Country}</strong> is the largest single contributor, with <strong>${topContributor['Total Count'].toLocaleString()}</strong> personnel.`);
+                
+                // New Insights
+                const perCapitaData = activeCountries.filter(d => d.Population > 0);
+                if (perCapitaData.length > 0) {
+                    const topPerCapita = perCapitaData.reduce((prev, current) => ((prev['Total Count']/prev.Population) > (current['Total Count']/current.Population)) ? prev : current);
+                    insights.push(`<strong>${topPerCapita.Country}</strong> contributes the most personnel per capita.`);
+                }
+                
+                const foundingMembers = allData.filter(d => d.MC_MembershipDate && new Date(d.MC_MembershipDate).getFullYear() === 1945);
+                if(foundingMembers.length > 0) insights.push(`There were <strong>${foundingMembers.length}</strong> founding members of the UN in 1945.`);
+                
+                const femaleRepsByCountry = d3.rollup(representativesData.filter(r => r.Gender === 'Female'), v => v.length, d => d.Country);
+                if(femaleRepsByCountry.size > 0) {
+                    const topFemaleReps = Array.from(femaleRepsByCountry.entries()).sort((a,b) => b[1] - a[1])[0];
+                    insights.push(`<strong>${topFemaleReps[0]}</strong> has the most female representatives, with <strong>${topFemaleReps[1]}</strong>.`);
+                }
 
-                // Select a random insight
-                const randomInsight = insights[Math.floor(Math.random() * insights.length)];
-                document.getElementById('insight-text').innerHTML = randomInsight;
+                document.getElementById('insight-text').innerHTML = insights[Math.floor(Math.random() * insights.length)];
             }
 
 
