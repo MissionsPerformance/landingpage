@@ -11,6 +11,8 @@
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js" charset="utf-8"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Flag Icon CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css"/>
 
     <style>
         /* Custom scrollbar for better aesthetics */
@@ -65,6 +67,13 @@
         }
         #spotlight-modal:not(.hidden) #spotlight-content {
             transform: scale(1);
+        }
+        /* Flag icon sizing */
+        .fi {
+            line-height: 1;
+            background-size: contain;
+            background-position: 50%;
+            background-repeat: no-repeat;
         }
     </style>
 </head>
@@ -180,14 +189,22 @@
     
     <!-- Country Spotlight Modal -->
     <div id="spotlight-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
-        <div id="spotlight-content" class="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 relative">
+        <div id="spotlight-content" class="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6 relative">
              <button id="spotlight-close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
                 <i data-lucide="x" class="w-6 h-6"></i>
              </button>
-             <h2 id="spotlight-title" class="text-3xl font-bold mb-4 border-b pb-2"></h2>
-             <div id="spotlight-body" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div id="spotlight-stats" class="space-y-3"></div>
-                <div id="spotlight-chart" style="min-height: 250px;"></div>
+             <h2 id="spotlight-title" class="text-3xl font-bold mb-4 border-b pb-2 flex items-center"></h2>
+             <div id="spotlight-body" class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                <div id="spotlight-stats-un" class="space-y-2">
+                    <h3 class="text-xl font-semibold text-gray-700 border-b pb-1">UN Contribution</h3>
+                </div>
+                <div id="spotlight-stats-country" class="space-y-2">
+                    <h3 class="text-xl font-semibold text-gray-700 border-b pb-1">Country Information</h3>
+                </div>
+                 <div id="spotlight-stats-mission" class="space-y-2">
+                    <h3 class="text-xl font-semibold text-gray-700 border-b pb-1">Mission Contact</h3>
+                </div>
+                <div id="spotlight-chart" class="md:col-span-3" style="min-height: 250px;"></div>
              </div>
         </div>
     </div>
@@ -200,6 +217,54 @@
             let filteredData = [];
             const ALL_METRICS = ['Female Count', 'Male Count', 'Total Count', 'Female Percent', 'Male Percent'];
             let plotlyListenerAttached = false;
+            
+            // --- Country Name to ISO Code Mapping ---
+            const countryCodeMap = {
+                'Afghanistan': 'af', 'Albania': 'al', 'Algeria': 'dz', 'Andorra': 'ad', 'Angola': 'ao',
+                'Antigua and Barbuda': 'ag', 'Argentina': 'ar', 'Armenia': 'am', 'Australia': 'au', 'Austria': 'at',
+                'Azerbaijan': 'az', 'Bahamas': 'bs', 'Bahrain': 'bh', 'Bangladesh': 'bd', 'Barbados': 'bb',
+                'Belarus': 'by', 'Belgium': 'be', 'Belize': 'bz', 'Benin': 'bj', 'Bhutan': 'bt',
+                'Bolivia (Plurinational State of)': 'bo', 'Bosnia and Herzegovina': 'ba', 'Botswana': 'bw',
+                'Brazil': 'br', 'Brunei Darussalam': 'bn', 'Bulgaria': 'bg', 'Burkina Faso': 'bf', 'Burundi': 'bi',
+                'Cabo Verde': 'cv', 'Cambodia': 'kh', 'Cameroon': 'cm', 'Canada': 'ca', 'Central African Republic': 'cf',
+                'Chad': 'td', 'Chile': 'cl', 'China': 'cn', 'Colombia': 'co', 'Comoros': 'km', 'Congo': 'cg',
+                'Costa Rica': 'cr', "Côte d'Ivoire": 'ci', 'Croatia': 'hr', 'Cuba': 'cu', 'Cyprus': 'cy',
+                'Czechia': 'cz', "Democratic People's Republic of Korea": 'kp', 'Democratic Republic of the Congo': 'cd',
+                'Denmark': 'dk', 'Djibouti': 'dj', 'Dominica': 'dm', 'Dominican Republic': 'do', 'Ecuador': 'ec',
+                'Egypt': 'eg', 'El Salvador': 'sv', 'Equatorial Guinea': 'gq', 'Eritrea': 'er', 'Estonia': 'ee',
+                'Eswatini': 'sz', 'Ethiopia': 'et', 'Fiji': 'fj', 'Finland': 'fi', 'France': 'fr', 'Gabon': 'ga',
+                'Gambia': 'gm', 'Georgia': 'ge', 'Germany': 'de', 'Ghana': 'gh', 'Greece': 'gr', 'Grenada': 'gd',
+                'Guatemala': 'gt', 'Guinea': 'gn', 'Guinea-Bissau': 'gw', 'Guyana': 'gy', 'Haiti': 'ht',
+                'Honduras': 'hn', 'Hungary': 'hu', 'Iceland': 'is', 'India': 'in', 'Indonesia': 'id',
+                'Iran (Islamic Republic of)': 'ir', 'Iraq': 'iq', 'Ireland': 'ie', 'Israel': 'il', 'Italy': 'it',
+                'Jamaica': 'jm', 'Japan': 'jp', 'Jordan': 'jo', 'Kazakhstan': 'kz', 'Kenya': 'ke', 'Kiribati': 'ki',
+                'Kuwait': 'kw', 'Kyrgyzstan': 'kg', "Lao People's Democratic Republic": 'la', 'Latvia': 'lv',
+                'Lebanon': 'lb', 'Lesotho': 'ls', 'Liberia': 'lr', 'Libya': 'ly', 'Liechtenstein': 'li',
+                'Lithuania': 'lt', 'Luxembourg': 'lu', 'Madagascar': 'mg', 'Malawi': 'mw', 'Malaysia': 'my',
+                'Maldives': 'mv', 'Mali': 'ml', 'Malta': 'mt', 'Marshall Islands': 'mh', 'Mauritania': 'mr',
+                'Mauritius': 'mu', 'Mexico': 'mx', 'Micronesia (Federated States of)': 'fm', 'Monaco': 'mc',
+                'Mongolia': 'mn', 'Montenegro': 'me', 'Morocco': 'ma', 'Mozambique': 'mz', 'Myanmar': 'mm',
+                'Namibia': 'na', 'Nauru': 'nr', 'Nepal': 'np', 'Netherlands': 'nl', 'New Zealand': 'nz',
+                'Nicaragua': 'ni', 'Niger': 'ne', 'Nigeria': 'ng', 'North Macedonia': 'mk', 'Norway': 'no',
+                'Oman': 'om', 'Pakistan': 'pk', 'Palau': 'pw', 'Panama': 'pa', 'Papua New Guinea': 'pg',
+                'Paraguay': 'py', 'Peru': 'pe', 'Philippines': 'ph', 'Poland': 'pl', 'Portugal': 'pt',
+                'Qatar': 'qa', 'Republic of Korea': 'kr', 'Republic of Moldova': 'md', 'Romania': 'ro',
+                'Russian Federation': 'ru', 'Rwanda': 'rw', 'Saint Kitts and Nevis': 'kn', 'Saint Lucia': 'lc',
+                'Saint Vincent and the Grenadines': 'vc', 'Samoa': 'ws', 'San Marino': 'sm',
+                'Sao Tome and Principe': 'st', 'Saudi Arabia': 'sa', 'Senegal': 'sn', 'Serbia': 'rs',
+                'Seychelles': 'sc', 'Sierra Leone': 'sl', 'Singapore': 'sg', 'Slovakia': 'sk', 'Slovenia': 'si',
+                'Solomon Islands': 'sb', 'Somalia': 'so', 'South Africa': 'za', 'South Sudan': 'ss', 'Spain': 'es',
+                'Sri Lanka': 'lk', 'Sudan': 'sd', 'Suriname': 'sr', 'Sweden': 'se', 'Switzerland': 'ch',
+                'Syrian Arab Republic': 'sy', 'Tajikistan': 'tj', 'Thailand': 'th', 'Timor-Leste': 'tl',
+                'Togo': 'tg', 'Tonga': 'to', 'Trinidad and Tobago': 'tt', 'Tunisia': 'tn', 'Türkiye': 'tr',
+                'Turkmenistan': 'tm', 'Tuvalu': 'tv', 'Uganda': 'ug', 'Ukraine': 'ua',
+                'United Arab Emirates': 'ae', 'United Kingdom of Great Britain and Northern Ireland': 'gb',
+                'United Republic of Tanzania': 'tz', 'United States of America': 'us', 'Uruguay': 'uy',
+                'Uzbekistan': 'uz', 'Vanuatu': 'vu', 'Venezuela (Bolivarian Republic of)': 've', 'Viet Nam': 'vn',
+                'Yemen': 'ye', 'Zambia': 'zm', 'Zimbabwe': 'zw'
+            };
+
+
             let state = {
                 selectedMetrics: ['Female Count', 'Male Count'],
                 metricColors: {
@@ -229,15 +294,16 @@
                 renderMetricsCheckboxes();
                 renderColorPickers();
                 try {
-                    // Corrected the path to be relative to the HTML file's location
-                    const data = await d3.csv('./UN_Bluebook_Data.csv');
+                    // Load the new enriched data file
+                    const data = await d3.csv('./UN_Bluebook_Data_rich.csv');
                     allData = data.map(d => ({
                         ...d,
-                        'Female Count': +d['Female Count'],
-                        'Male Count': +d['Male Count'],
-                        'Total Count': +d['Total Count'],
-                        'Female Percent': +d['Female Percent'].replace('%', ''),
-                        'Male Percent': +d['Male Percent'].replace('%', ''),
+                        'Female Count': +d['Female Count'] || 0,
+                        'Male Count': +d['Male Count'] || 0,
+                        'Total Count': +d['Total Count'] || 0,
+                        'Female Percent': d['Female Percent'] ? +d['Female Percent'].replace('%', '') : 0,
+                        'Male Percent': d['Male Percent'] ? +d['Male Percent'].replace('%', '') : 0,
+                        'Population': +d['Population'] || 0
                     }));
                     
                     populateRegionSelect();
@@ -484,18 +550,21 @@
                     return;
                 }
                 
-                const columns = ['Country', 'Group', 'Female Count', 'Male Count', 'Total Count', 'Female Percent', 'Male Percent'];
+                const columns = ['', 'Country', 'Group', 'Female Count', 'Male Count', 'Total Count'];
                 const header = `<thead><tr class="bg-gray-50">${columns.map(c => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${c}</th>`).join('')}</tr></thead>`;
-                const body = `<tbody>${filteredData.map(row => `
+                const body = `<tbody>${filteredData.map(row => {
+                    const countryCode = countryCodeMap[row.Country] || '';
+                    const flagHtml = countryCode ? `<span class="fi fi-${countryCode} fis rounded-sm shadow-sm" style="width: 32px; height: 24px; display: inline-block;"></span>` : '<div class="w-8 h-6 bg-gray-200 rounded-sm"></div>';
+                    return `
                     <tr class="hover:bg-gray-100 cursor-pointer" data-country="${row.Country}">
+                        <td class="px-6 py-4">${flagHtml}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">${row.Country}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row.Group}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Female Count'].toLocaleString()}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Male Count'].toLocaleString()}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Total Count'].toLocaleString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Female Percent'].toFixed(1)}%</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Male Percent'].toFixed(1)}%</td>
-                    </tr>`).join('')}</tbody>`;
+                    </tr>`
+                }).join('')}</tbody>`;
                 
                 panel.innerHTML = `<table class="min-w-full divide-y divide-gray-200">${header}${body}</table>`;
 
@@ -552,31 +621,73 @@
             }
             
             // --- Spotlight Modal Functions ---
+            function createStatRow(label, value, icon = null) {
+                if (!value) return ''; // Don't render if no value
+                const iconHtml = icon ? `<i data-lucide="${icon}" class="w-4 h-4 mr-2 text-gray-500"></i>` : '';
+                return `
+                    <div class="flex justify-between items-start text-md py-1">
+                        <span class="font-semibold text-gray-600 flex items-center shrink-0">${iconHtml}${label}:</span>
+                        <span class="font-mono text-gray-800 text-right ml-4">${value}</span>
+                    </div>
+                `;
+            }
+            
+            function createLinkRow(label, value, href, icon = null) {
+                if (!value) return ''; // Don't render if no value
+                const iconHtml = icon ? `<i data-lucide="${icon}" class="w-4 h-4 mr-2 text-gray-500"></i>` : '';
+                return `
+                     <div class="flex justify-between items-start text-md py-1">
+                        <span class="font-semibold text-gray-600 flex items-center shrink-0">${iconHtml}${label}:</span>
+                        <a href="${href}" target="_blank" rel="noopener noreferrer" class="font-mono text-blue-600 hover:underline truncate ml-4 text-right">${value}</a>
+                    </div>
+                `;
+            }
+
             function showSpotlight(countryName) {
                 const countryData = allData.find(d => d.Country === countryName);
                 if (!countryData) return;
-
-                document.getElementById('spotlight-title').textContent = countryData.Country;
                 
-                const statsContainer = document.getElementById('spotlight-stats');
-                statsContainer.innerHTML = `
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="font-bold text-gray-600">Region:</span>
-                        <span class="font-mono text-gray-800">${countryData.Group}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-lg">
-                        <span class="font-bold text-gray-600">Total Personnel:</span>
-                        <span class="font-mono text-blue-600 font-bold">${countryData['Total Count'].toLocaleString()}</span>
-                    </div>
-                     <div class="flex justify-between items-center text-lg">
-                        <span class="font-bold text-gray-600">Female Personnel:</span>
-                        <span class="font-mono text-pink-500">${countryData['Female Count'].toLocaleString()} (${countryData['Female Percent'].toFixed(1)}%)</span>
-                    </div>
-                     <div class="flex justify-between items-center text-lg">
-                        <span class="font-bold text-gray-600">Male Personnel:</span>
-                        <span class="font-mono text-sky-500">${countryData['Male Count'].toLocaleString()} (${countryData['Male Percent'].toFixed(1)}%)</span>
-                    </div>
+                const countryCode = countryCodeMap[countryData.Country] || '';
+                const flagHtml = countryCode ? `<span class="fi fi-${countryCode} fis rounded-md shadow-md mr-4" style="width: 40px; height: 30px; display: inline-block;"></span>` : '';
+
+                document.getElementById('spotlight-title').innerHTML = `
+                    ${flagHtml}
+                    <span>${countryData.Country}</span>
                 `;
+                
+                const statsUnContainer = document.getElementById('spotlight-stats-un');
+                statsUnContainer.innerHTML = `
+                    <h3 class="text-xl font-semibold text-gray-700 border-b pb-1 mb-2">UN Contribution</h3>
+                    ${createStatRow('Total Personnel', countryData['Total Count'].toLocaleString())}
+                    ${createStatRow('Female Personnel', `${countryData['Female Count'].toLocaleString()} (${countryData['Female Percent'].toFixed(1)}%)`)}
+                    ${createStatRow('Male Personnel', `${countryData['Male Count'].toLocaleString()} (${countryData['Male Percent'].toFixed(1)}%)`)}
+                `;
+
+                const statsCountryContainer = document.getElementById('spotlight-stats-country');
+                statsCountryContainer.innerHTML = `
+                     <h3 class="text-xl font-semibold text-gray-700 border-b pb-1 mb-2">Country Information</h3>
+                    ${createStatRow('Capital', countryData.Capital, 'map-pin')}
+                    ${createStatRow('Region', countryData.Region, 'globe-2')}
+                    ${createStatRow('Subregion', countryData['Sub-region'], 'map')}
+                    ${createStatRow('Population', countryData.Population.toLocaleString(), 'users')}
+                `;
+                
+                const missionContainer = document.getElementById('spotlight-stats-mission');
+                missionContainer.innerHTML = `
+                    <h3 class="text-xl font-semibold text-gray-700 border-b pb-1 mb-2">Mission Contact</h3>
+                    ${createStatRow('Entity', countryData.MC_EntityShort)}
+                    ${createStatRow('Full Entity Name', countryData.MC_EntityLong)}
+                    ${createStatRow('Address', countryData.MC_Address, 'building')}
+                    ${createStatRow('Telephone', countryData.MC_Telephone, 'phone')}
+                    ${createStatRow('Fax', countryData.MC_Telefax, 'printer')}
+                    ${createStatRow('Membership Date', countryData.MC_MembershipDate, 'calendar')}
+                    ${createStatRow('National Holiday', countryData.MC_Holiday, 'cake')}
+                    ${createLinkRow('Website', countryData.MC_WebSite, countryData.MC_WebSite, 'external-link')}
+                    ${createLinkRow('Social Media', countryData.MC_SocialMedia, countryData.MC_SocialMedia, 'at-sign')}
+                    ${createLinkRow('Email', countryData.MC_eMail, 'mailto:' + countryData.MC_eMail, 'mail')}
+                    ${createStatRow('UN Correspondence', countryData.MC_UNCorrespondenceLanguage, 'languages')}
+                `;
+
 
                 const spotlightChart = document.getElementById('spotlight-chart');
                 const pieData = [{
@@ -588,13 +699,15 @@
                         colors: [state.metricColors['Female Count'], state.metricColors['Male Count']]
                     },
                     textinfo: 'label+percent',
-                    textposition: 'inside'
+                    textposition: 'inside',
+                    hoverinfo: 'label+value'
                 }];
                 const pieLayout = {
-                    title: 'Gender Distribution',
-                    height: 250,
-                    margin: { t: 40, b: 20, l: 20, r: 20 },
-                    showlegend: false,
+                    title: 'Gender Distribution of Deployed Personnel',
+                    height: 280,
+                    margin: { t: 50, b: 20, l: 20, r: 20 },
+                    showlegend: true,
+                    legend: { x: 0.5, y: -0.1, xanchor: 'center', orientation: 'h'},
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)',
                 };
