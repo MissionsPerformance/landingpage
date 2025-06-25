@@ -75,6 +75,13 @@
             background-position: 50%;
             background-repeat: no-repeat;
         }
+        /* Table sort indicator */
+        .sortable-header {
+            cursor: pointer;
+        }
+        .sortable-header:hover {
+            color: #3b82f6;
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -167,6 +174,17 @@
             <!-- Main Content -->
             <main class="flex-1 p-4 sm:p-6 lg:p-8 bg-gray-50 overflow-auto">
                 <div class="w-full max-w-7xl mx-auto">
+                    <!-- "Did You Know?" Insights Panel -->
+                    <div id="insights-panel" class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded-md shadow-sm" role="alert">
+                        <div class="flex">
+                            <div class="py-1"><i data-lucide="info" class="w-5 h-5 text-blue-500 mr-3"></i></div>
+                            <div>
+                                <p class="font-bold">Did you know?</p>
+                                <p id="insight-text" class="text-sm">Interesting facts will appear here.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Tab Navigation -->
                     <div class="mb-6">
                         <div class="border-b border-gray-200">
@@ -264,8 +282,7 @@
                 'Yemen': 'ye', 'Zambia': 'zm', 'Zimbabwe': 'zw'
             };
 
-
-            let state = {
+            let defaultState = {
                 selectedMetrics: ['Female Count', 'Male Count'],
                 metricColors: {
                     'Female Count': '#ff69b4',
@@ -279,8 +296,11 @@
                 displayMode: 'Top',
                 nValue: 15,
                 searchTerm: '',
-                activeTab: 'Chart'
+                activeTab: 'Chart',
+                tableSort: { key: 'Total Count', direction: 'desc' }
             };
+
+            let state = {};
 
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebar-overlay');
@@ -289,10 +309,11 @@
 
             // --- Main Setup Function ---
             async function initializeApp() {
+                loadStateFromLocalStorage();
                 lucide.createIcons(); // Initialize icons
                 setupEventListeners();
-                renderMetricsCheckboxes();
-                renderColorPickers();
+                renderFiltersFromState();
+
                 try {
                     // Load the new enriched data file
                     const data = await d3.csv('./UN_Bluebook_Data_rich.csv');
@@ -339,12 +360,6 @@
                     if (e.target.tagName === 'BUTTON') {
                         const mode = e.target.dataset.mode;
                         handleStateChange('displayMode', mode);
-                        
-                        document.querySelectorAll('#displayModeContainer button').forEach(btn => {
-                            btn.className = 'w-full py-1 text-sm rounded-md bg-transparent text-gray-600 hover:bg-gray-200';
-                        });
-                        e.target.className = 'w-full py-1 text-sm rounded-md bg-white text-blue-600 shadow';
-                        nRangeContainer.classList.toggle('hidden', mode === 'All');
                     }
                 });
 
@@ -353,17 +368,6 @@
                     if (e.target.classList.contains('tab-button')) {
                         const tabName = e.target.dataset.tab;
                         handleStateChange('activeTab', tabName);
-                        
-                        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                        e.target.classList.add('active');
-
-                        document.querySelectorAll('.panel').forEach(panel => panel.classList.add('hidden'));
-                        document.getElementById(`${tabName.toLowerCase()}-panel`).classList.remove('hidden');
-                        
-                        // Redraw on tab change to ensure correct sizing
-                        if(tabName === 'Chart' || tabName === 'Map') {
-                             setTimeout(updateVisualizations, 50);
-                        }
                     }
                 });
                 
@@ -374,12 +378,48 @@
                         hideSpotlight();
                     }
                 });
-
             }
+            
+            function renderFiltersFromState() {
+                // Set initial values from state
+                document.getElementById('chartTypeSelect').value = state.chartType;
+                document.getElementById('regionSelect').value = state.region;
+                document.getElementById('nRange').value = state.nValue;
+                document.getElementById('nValue').textContent = state.nValue;
+                document.getElementById('searchInput').value = state.searchTerm;
+                
+                // Set display mode button active state
+                document.querySelectorAll('#displayModeContainer button').forEach(btn => {
+                    btn.className = `w-full py-1 text-sm rounded-md transition-colors ${state.displayMode === btn.dataset.mode ? 'bg-white text-blue-600 shadow' : 'bg-transparent text-gray-600 hover:bg-gray-200'}`;
+                });
+                nRangeContainer.classList.toggle('hidden', state.displayMode === 'All');
+                
+                 // Set active tab
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`.tab-button[data-tab="${state.activeTab}"]`).classList.add('active');
+
+                document.querySelectorAll('.panel').forEach(panel => panel.classList.add('hidden'));
+                document.getElementById(`${state.activeTab.toLowerCase()}-panel`).classList.remove('hidden');
+
+                renderMetricsCheckboxes();
+                renderColorPickers();
+            }
+
 
             function handleStateChange(key, value) {
                 state[key] = value;
+                saveStateToLocalStorage();
                 updateVisualizations();
+                renderFiltersFromState(); // Re-render filters to reflect state
+            }
+            
+            function loadStateFromLocalStorage() {
+                const savedState = localStorage.getItem('unBluebookState');
+                state = savedState ? JSON.parse(savedState) : defaultState;
+            }
+
+            function saveStateToLocalStorage() {
+                localStorage.setItem('unBluebookState', JSON.stringify(state));
             }
 
             function toggleSidebar() {
@@ -397,7 +437,22 @@
                 if (state.searchTerm) {
                     data = data.filter(d => d.Country.toLowerCase().includes(state.searchTerm.toLowerCase()));
                 }
-                data.sort((a, b) => b['Total Count'] - a['Total Count']);
+                
+                // Apply sorting
+                const sortKey = state.tableSort.key;
+                const sortDir = state.tableSort.direction;
+                data.sort((a,b) => {
+                    let valA = a[sortKey];
+                    let valB = b[sortKey];
+                    if(typeof valA === 'string') {
+                       valA = valA.toLowerCase();
+                       valB = valB.toLowerCase();
+                    }
+                    if(valA < valB) return sortDir === 'asc' ? -1 : 1;
+                    if(valA > valB) return sortDir === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                
                 if (state.displayMode === 'Top') {
                     data = data.slice(0, state.nValue);
                 } else if (state.displayMode === 'Bottom') {
@@ -408,6 +463,7 @@
 
             function updateVisualizations() {
                 filterAndSortData();
+                updateInsights();
                 drawChart();
                 drawTable();
                 drawMap();
@@ -444,7 +500,7 @@
                             state.selectedMetrics.push(metric);
                          }
                          renderColorPickers();
-                         updateVisualizations();
+                         handleStateChange('selectedMetrics', state.selectedMetrics);
                     });
                     container.appendChild(label);
                  });
@@ -475,6 +531,7 @@
                         if(state.activeTab === 'Chart') {
                             drawChart();
                         }
+                        saveStateToLocalStorage();
                     });
 
                     wrapper.appendChild(label);
@@ -509,7 +566,8 @@
                         values: filteredData.map(d => d['Total Count']),
                         type: 'pie',
                         hole: .4,
-                        hoverinfo: 'label+percent+value', textinfo: 'label+percent', textposition: 'inside'
+                        hoverinfo: 'label+percent+value', textinfo: 'label+percent', textposition: 'inside',
+                        pull: filteredData.map(d => d.Country.toLowerCase().includes(state.searchTerm.toLowerCase()) && state.searchTerm ? 0.1 : 0)
                     }];
                     plotLayout = { ...layout, title: { ...layout.title, text: 'Total Count Distribution'} };
                 } else {
@@ -518,7 +576,11 @@
                         x: filteredData.map(d => d[metric]).reverse(),
                         y: yCategories, name: metric, type: 'bar', orientation: 'h',
                         marker: {
-                            color: state.metricColors[metric]
+                            color: state.metricColors[metric],
+                            line: {
+                                color: 'rgba(0,0,0,0.8)',
+                                width: filteredData.map(d => d.Country.toLowerCase().includes(state.searchTerm.toLowerCase()) && state.searchTerm ? 2 : 0)
+                            }
                         }
                     }));
                     plotLayout = {
@@ -550,23 +612,54 @@
                     return;
                 }
                 
-                const columns = ['', 'Country', 'Group', 'Female Count', 'Male Count', 'Total Count'];
-                const header = `<thead><tr class="bg-gray-50">${columns.map(c => `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${c}</th>`).join('')}</tr></thead>`;
+                const columns = [
+                    { key: '', label: '' },
+                    { key: 'Country', label: 'Country' },
+                    { key: 'Group', label: 'Group' },
+                    { key: 'Female Count', label: 'Female' },
+                    { key: 'Male Count', label: 'Male' },
+                    { key: 'Total Count', label: 'Total' }
+                ];
+
+                const header = `<thead><tr class="bg-gray-50">${columns.map(c => {
+                    const isSortable = c.key !== '';
+                    let sortIndicator = '';
+                    if(isSortable && state.tableSort.key === c.key){
+                        sortIndicator = state.tableSort.direction === 'asc' ? '<i data-lucide="arrow-up" class="w-4 h-4 ml-1"></i>' : '<i data-lucide="arrow-down" class="w-4 h-4 ml-1"></i>';
+                    }
+                    return `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${isSortable ? 'sortable-header' : ''}" data-sort-key="${c.key}">
+                        <span class="flex items-center">${c.label}${sortIndicator}</span>
+                    </th>`
+                }).join('')}</tr></thead>`;
+                
                 const body = `<tbody>${filteredData.map(row => {
                     const countryCode = countryCodeMap[row.Country] || '';
                     const flagHtml = countryCode ? `<span class="fi fi-${countryCode} fis rounded-sm shadow-sm" style="width: 32px; height: 24px; display: inline-block;"></span>` : '<div class="w-8 h-6 bg-gray-200 rounded-sm"></div>';
+                    const isHighlighted = state.searchTerm && row.Country.toLowerCase().includes(state.searchTerm.toLowerCase());
                     return `
-                    <tr class="hover:bg-gray-100 cursor-pointer" data-country="${row.Country}">
+                    <tr class="hover:bg-gray-100 cursor-pointer ${isHighlighted ? 'bg-blue-100' : ''}" data-country="${row.Country}">
                         <td class="px-6 py-4">${flagHtml}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold">${row.Country}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row.Group}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Female Count'].toLocaleString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Male Count'].toLocaleString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${row['Total Count'].toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">${row['Female Count'].toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">${row['Male Count'].toLocaleString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right font-bold">${row['Total Count'].toLocaleString()}</td>
                     </tr>`
                 }).join('')}</tbody>`;
                 
                 panel.innerHTML = `<table class="min-w-full divide-y divide-gray-200">${header}${body}</table>`;
+                lucide.createIcons();
+
+                panel.querySelectorAll('.sortable-header').forEach(header => {
+                    header.addEventListener('click', (e) => {
+                        const newSortKey = e.currentTarget.dataset.sortKey;
+                        let newSortDir = 'desc';
+                        if(state.tableSort.key === newSortKey && state.tableSort.direction === 'desc'){
+                            newSortDir = 'asc';
+                        }
+                        handleStateChange('tableSort', { key: newSortKey, direction: newSortDir });
+                    });
+                });
 
                 panel.querySelectorAll('tbody tr').forEach(row => {
                     row.addEventListener('click', () => {
@@ -604,7 +697,6 @@
                         showSpotlight(data.points[0].text);
                     }
                 });
-
             }
             
             function downloadCSV() {
@@ -719,6 +811,26 @@
 
             function hideSpotlight() {
                 spotlightModal.classList.add('hidden');
+            }
+            
+            // --- Insights Function ---
+            function updateInsights() {
+                if (allData.length === 0) return;
+                
+                const insights = [];
+
+                // Insight 1: Region with most personnel
+                const personnelByRegion = d3.rollup(allData, v => d3.sum(v, d => d['Total Count']), d => d.Group);
+                const topRegion = Array.from(personnelByRegion.entries()).sort((a,b) => b[1] - a[1])[0];
+                insights.push(`The <strong>${topRegion[0]}</strong> region contributes the most personnel, with a total of <strong>${topRegion[1].toLocaleString()}</strong>.`);
+
+                // Insight 3: Country with most personnel
+                const topContributor = allData.reduce((prev, current) => (prev['Total Count'] > current['Total Count']) ? prev : current);
+                insights.push(`<strong>${topContributor.Country}</strong> is the largest single contributor, with <strong>${topContributor['Total Count'].toLocaleString()}</strong> personnel.`);
+
+                // Select a random insight
+                const randomInsight = insights[Math.floor(Math.random() * insights.length)];
+                document.getElementById('insight-text').innerHTML = randomInsight;
             }
 
 
