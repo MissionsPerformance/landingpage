@@ -214,11 +214,16 @@
     <!-- Country Spotlight Modal -->
     <div id="spotlight-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center p-4">
         <div id="spotlight-content" class="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
-             <div class="p-6 flex-shrink-0">
-                <button id="spotlight-close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-                <h2 id="spotlight-title" class="text-3xl font-bold mb-4 flex items-center"></h2>
+             <div class="p-6 flex-shrink-0 flex justify-between items-start">
+                <h2 id="spotlight-title" class="text-3xl font-bold flex items-center"></h2>
+                <div class="flex items-center space-x-2">
+                    <button id="share-button" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600" title="Copy Link">
+                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                    </button>
+                    <button id="spotlight-close" class="p-2 rounded-md hover:bg-gray-200 text-gray-600">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
              </div>
              <!-- Modal Tabs -->
              <div class="px-6 border-b border-gray-200 flex-shrink-0">
@@ -303,7 +308,7 @@
                 'Syrian Arab Republic': 'sy', 'Tajikistan': 'tj', 'Thailand': 'th', 'Timor-Leste': 'tl',
                 'Togo': 'tg', 'Tonga': 'to', 'Trinidad and Tobago': 'tt', 'Tunisia': 'tn', 'Türkiye': 'tr',
                 'Turkmenistan': 'tm', 'Tuvalu': 'tv', 'Uganda': 'ug', 'Ukraine': 'ua',
-                'United Arab Emirates': 'ae', 'United Kingdom': 'gb', 'United Kingdom': 'gb',
+                'United Arab Emirates': 'ae', 'United Kingdom': 'gb', 'United Kingdom of Great Britain and Northern Ireland': 'gb',
                 'United Republic of Tanzania': 'tz', 'United States of America': 'us', 'Uruguay': 'uy',
                 'Uzbekistan': 'uz', 'Vanuatu': 'vu', 'Venezuela (Bolivarian Republic of)': 've', 'Viet Nam': 'vn',
                 'Yemen': 'ye', 'Zambia': 'zm', 'Zimbabwe': 'zw'
@@ -353,21 +358,30 @@
                     // Group representatives by country
                     const repsByCountry = d3.group(representativesData, d => d.Country);
 
-                    allData = countryData.map(d => ({
-                        ...d,
-                        'Female Count': +d['Female Count'] || 0,
-                        'Male Count': +d['Male Count'] || 0,
-                        'Total Count': +d['Total Count'] || 0,
-                        'Female Percent': d['Female Percent'] ? +d['Female Percent'].replace('%', '') : 0,
-                        'Male Percent': d['Male Percent'] ? +d['Male Percent'].replace('%', '') : 0,
-                        'Population': +d['Population'] || 0,
-                        representatives: repsByCountry.get(d.Country) || []
-                    }));
+                    allData = countryData.map(d => {
+                        const femaleCount = +d['Female Count'] || 0;
+                        const totalCount = +d['Total Count'] || 0;
+                        const maleCount = +d['Male Count'] || 0;
+                        const femalePercent = totalCount > 0 ? (femaleCount / totalCount) * 100 : 0;
+                        const malePercent = totalCount > 0 ? (maleCount / totalCount) * 100 : 0;
+                        
+                        return {
+                            ...d,
+                            'Female Count': femaleCount,
+                            'Male Count': maleCount,
+                            'Total Count': totalCount,
+                            'Female Percent': femalePercent,
+                            'Male Percent': malePercent,
+                            'Population': +d['Population'] || 0,
+                            representatives: repsByCountry.get(d.Country) || []
+                        };
+                    });
                     
                     populateRegionSelect();
                     document.getElementById('nRange').max = allData.length;
                     document.getElementById('loading').classList.add('hidden');
                     updateVisualizations();
+                    handleUrlHashOnLoad(); // Check URL for deep links after data is loaded
                     
                 } catch (error) {
                     console.error("Error loading data:", error);
@@ -410,6 +424,9 @@
                 document.getElementById('modal-tabs').addEventListener('click', (e) => {
                     if(e.target.classList.contains('modal-tab-button')) {
                         const tabId = e.target.dataset.tab;
+                        const currentCountry = document.getElementById('spotlight-title').dataset.country;
+                        updateUrlHash(currentCountry, tabId);
+                        
                         document.querySelectorAll('.modal-tab-button').forEach(btn => btn.classList.remove('active'));
                         e.target.classList.add('active');
                         document.querySelectorAll('.modal-panel').forEach(panel => panel.classList.add('hidden'));
@@ -423,6 +440,21 @@
                     if (e.target === spotlightModal) {
                         hideSpotlight();
                     }
+                });
+                
+                // Share button
+                document.getElementById('share-button').addEventListener('click', (e) => {
+                    const urlToCopy = window.location.href;
+                    navigator.clipboard.writeText(urlToCopy).then(() => {
+                        e.currentTarget.innerHTML = '<i data-lucide="check" class="w-5 h-5 text-green-500"></i>';
+                        lucide.createIcons();
+                        setTimeout(() => {
+                            e.currentTarget.innerHTML = '<i data-lucide="share-2" class="w-5 h-5"></i>';
+                            lucide.createIcons();
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
                 });
             }
             
@@ -442,20 +474,21 @@
                 
                  // Set active tab for main content
                 document.querySelectorAll('#tabs .tab-button').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.tab === state.activeTab);
-                    btn.classList.toggle('border-blue-500', btn.dataset.tab === state.activeTab);
-                    btn.classList.toggle('text-blue-600', btn.dataset.tab === state.activeTab);
-                    btn.classList.toggle('border-transparent', btn.dataset.tab !== state.activeTab);
-                    btn.classList.toggle('text-gray-500', btn.dataset.tab !== state.activeTab);
+                    const isActive = btn.dataset.tab === state.activeTab;
+                    btn.classList.toggle('active', isActive);
+                    btn.classList.toggle('border-blue-500', isActive);
+                    btn.classList.toggle('text-blue-600', isActive);
+                    btn.classList.toggle('border-transparent', !isActive);
+                    btn.classList.toggle('text-gray-500', !isActive);
                 });
 
                 document.querySelectorAll('.panel').forEach(panel => panel.classList.add('hidden'));
-                document.getElementById(`${state.activeTab.toLowerCase()}-panel`).classList.remove('hidden');
+                const activePanel = document.getElementById(`${state.activeTab.toLowerCase()}-panel`);
+                if(activePanel) activePanel.classList.remove('hidden');
 
                 renderMetricsCheckboxes();
                 renderColorPickers();
             }
-
 
             function handleStateChange(key, value) {
                 state[key] = value;
@@ -468,7 +501,6 @@
                 try {
                     const savedState = localStorage.getItem('unBluebookState');
                     state = savedState ? JSON.parse(savedState) : { ...defaultState };
-                    // Ensure tableSort exists
                     if (!state.tableSort) {
                         state.tableSort = { ...defaultState.tableSort };
                     }
@@ -483,6 +515,26 @@
                     localStorage.setItem('unBluebookState', JSON.stringify(state));
                 } catch (e) {
                     console.error("Could not save state to local storage", e);
+                }
+            }
+            
+            function updateUrlHash(country, tab) {
+                if (country) {
+                    history.pushState(null, '', `#country=${encodeURIComponent(country)}&tab=${tab || 'overview'}`);
+                } else {
+                    history.pushState(null, '', window.location.pathname + window.location.search);
+                }
+            }
+            
+            function handleUrlHashOnLoad() {
+                const params = new URLSearchParams(window.location.hash.substring(1));
+                const country = params.get('country');
+                const tab = params.get('tab');
+                if (country) {
+                    const countryExists = allData.some(d => d.Country === country);
+                    if (countryExists) {
+                        showSpotlight(country, tab);
+                    }
                 }
             }
 
@@ -518,11 +570,9 @@
                 });
                 
                 if (state.displayMode === 'Top') {
-                    // Sort by total count desc for 'Top' mode, regardless of current table sort
                     data.sort((a, b) => b['Total Count'] - a['Total Count']);
                     data = data.slice(0, state.nValue);
                 } else if (state.displayMode === 'Bottom') {
-                    // Sort by total count asc for 'Bottom' mode
                     data.sort((a, b) => a['Total Count'] - b['Total Count']);
                     data = data.slice(0, state.nValue);
                 }
@@ -596,10 +646,10 @@
                     
                     input.addEventListener('change', (e) => {
                         state.metricColors[metric] = e.target.value;
+                        saveStateToLocalStorage();
                         if(state.activeTab === 'Chart') {
                             drawChart();
                         }
-                        saveStateToLocalStorage();
                     });
 
                     wrapper.appendChild(label);
@@ -804,14 +854,18 @@
                 `;
             }
             
-            function showSpotlight(countryName) {
+            function showSpotlight(countryName, activeTab = 'overview') {
                 const countryData = allData.find(d => d.Country === countryName);
                 if (!countryData) return;
                 
+                updateUrlHash(countryName, activeTab);
+
+                const titleElement = document.getElementById('spotlight-title');
+                titleElement.dataset.country = countryName;
+
                 const countryCode = countryCodeMap[countryData.Country] || '';
                 const flagHtml = countryCode ? `<span class="fi fi-${countryCode} fis rounded-md shadow-md mr-4" style="width: 40px; height: 30px; display: inline-block;"></span>` : '';
-
-                document.getElementById('spotlight-title').innerHTML = `${flagHtml}<span>${countryData.Country}</span>`;
+                titleElement.innerHTML = `${flagHtml}<span>${countryData.Country}</span>`;
                 
                 // --- Populate Overview Tab ---
                 const statsUnContainer = document.getElementById('spotlight-stats-un');
@@ -884,14 +938,15 @@
                     repsContainer.innerHTML = `<p class="text-center text-gray-500">No representative data available for this country.</p>`;
                 }
 
-                // Show modal and set default tab
+                // Show modal and set active tab
                 spotlightModal.classList.remove('hidden');
-                document.querySelector('.modal-tab-button[data-tab="overview"]').click();
+                document.querySelector(`.modal-tab-button[data-tab="${activeTab}"]`).click();
                 lucide.createIcons();
             }
 
             function hideSpotlight() {
                 spotlightModal.classList.add('hidden');
+                updateUrlHash(null); // Clear hash from URL
             }
             
             // --- Insights Function ---
