@@ -91,7 +91,16 @@
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
-
+    <div id="password-modal" class="password-modal">
+        <div class="password-modal-content">
+            <h2>Password Required</h2>
+            <p>Please enter the password to access this page.</p>
+            <form id="password-form">
+                <input type="password" id="password-input" class="form-input" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
     <div id="app" class="h-screen w-screen flex flex-col">
         <!-- Header -->
         <header class="bg-gray-800 text-white p-4 flex items-center shadow-md z-20 flex-shrink-0">
@@ -197,14 +206,12 @@
                             <nav id="tabs" class="-mb-px flex space-x-6" aria-label="Tabs">
                                 <button data-tab="Chart" class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Chart</button>
                                 <button data-tab="Table" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Table</button>
-                                <button data-tab="Map" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Map</button>
                             </nav>
                         </div>
                     </div>
                     <!-- Content Panels -->
                     <div id="chart-panel" class="panel bg-white p-4 rounded-lg shadow-sm"></div>
                     <div id="table-panel" class="panel hidden bg-white p-4 rounded-lg shadow-sm overflow-x-auto"></div>
-                    <div id="map-panel" class="panel hidden bg-white p-4 rounded-lg shadow-sm"></div>
                     <div id="loading" class="text-center p-10 text-xl font-semibold">Loading Data...</div>
                 </div>
             </main>
@@ -584,7 +591,6 @@
                 updateInsights();
                 drawChart();
                 drawTable();
-                drawMap();
             }
 
             function populateRegionSelect() {
@@ -786,37 +792,6 @@
                     });
                 });
             }
-
-            function drawMap() {
-                const panel = document.getElementById('map-panel');
-                const metric = state.selectedMetrics[0];
-                if (!filteredData.length || !metric) {
-                    panel.innerHTML = `<div class="text-center text-gray-500 p-10">Select a metric to display on the map.</div>`;
-                    return;
-                }
-                const mapData = [{
-                    type: 'choropleth', locations: filteredData.map(d => d.Country), locationmode: 'country names',
-                    z: filteredData.map(d => d[metric]), text: filteredData.map(d => d.Country),
-                    colorscale: 'Viridis', reversescale: true,
-                    hovertemplate: '<b>%{text}</b><br>' + `${metric}: %{z:,}` + '<extra></extra>',
-                    marker: { line: { color: 'white', width: 0.5 } },
-                    colorbar: { title: metric, thickness: 15 }
-                }];
-                const layout = {
-                    title: { text: `${metric} by Country`, font: { size: 20, color: '#333' }, x: 0.05 },
-                    height: 600,
-                    geo: { showframe: false, showcoastlines: true, projection: { type: 'mercator' } },
-                    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
-                };
-                Plotly.react(panel, mapData, layout, { responsive: true, displaylogo: false });
-                
-                panel.on('plotly_click', (data) => {
-                    if (data.points.length > 0) {
-                        showSpotlight(data.points[0].text);
-                    }
-                });
-
-            }
             
             function downloadCSV() {
                 const csv = d3.csvFormat(filteredData);
@@ -996,5 +971,6 @@
             initializeApp();
         });
     </script>
+    <script src="password.js"></script>
 </body>
 </html>
