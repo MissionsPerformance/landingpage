@@ -8,9 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- D3.js for data visualization -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="timeline.css">
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+<body class="bg-gray-100 flex flex-col items-center min-h-screen p-4 sm:p-6 lg:p-8">
 
     <div class="w-full max-w-7xl mb-4">
         <a href="index.html" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium rounded-lg p-2 -ml-2">
@@ -18,13 +20,26 @@
             Back to Home
         </a>
     </div>
-    
+
     <div class="w-full max-w-7xl bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-8">
         <!-- Header -->
-        <div class="text-center mb-8">
+        <div class="text-center mb-2">
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">United Nations Membership Growth</h1>
             <p class="mt-2 text-md sm:text-lg text-gray-600">An interactive timeline of countries joining the UN</p>
-            <p class="mt-1 text-sm text-gray-500">Hover over dots for details, or click a dot to generate AI-powered insights.</p>
+        </div>
+
+        <!-- Controls: Search and Toggle -->
+        <div class="w-full max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 my-6 px-4 sm:px-0">
+            <!-- Search Bar -->
+            <div class="relative w-full sm:w-80">
+                <input type="text" id="search-input" placeholder="Search for a country..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                <i data-lucide="search" class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+            </div>
+            <!-- View Toggle -->
+            <div class="flex bg-gray-200 rounded-full p-1 shadow-inner">
+                <button id="cumulative-btn" class="toggle-btn active">Cumulative</button>
+                <button id="per-year-btn" class="toggle-btn">Per Year</button>
+            </div>
         </div>
 
         <!-- Chart Container -->
@@ -34,8 +49,11 @@
             </div>
         </div>
         
-        <!-- Tooltip Container -->
+        <!-- Tooltip Container (for hover) -->
         <div id="tooltip"></div>
+
+        <!-- Selected Info Panel (for click) -->
+        <div id="selected-info-panel" class="mt-6 border-t pt-4 border-gray-200 hidden"></div>
     </div>
 
     <!-- Gemini Insights Section -->
@@ -55,7 +73,13 @@
             </div>
         </div>
     </div>
-
+    
+    <script>
+        // Initialize Lucide Icons after the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
     <script src="timeline.js"></script>
 </body>
 </html>

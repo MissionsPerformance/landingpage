@@ -2,8 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-// To eliminate file loading issues, the CSV data is now embedded directly as a string.
-const csvData = `Country,Official Name,UN Membership Date
+    const csvData = `Country,Official Name,UN Membership Date
 Afghanistan,Islamic Republic of Afghanistan,1946-11-19
 Albania,Republic of Albania,1955-12-14
 Algeria,People's Democratic Republic of Algeria,1962-10-08
@@ -96,7 +95,7 @@ Kenya,Republic of Kenya,1963-12-16
 Kiribati,Republic of Kiribati,1999-09-14
 Kuwait,State of Kuwait,1963-05-14
 Kyrgyzstan,Kyrgyz Republic,1992-03-02
-Lao People's Democratic Republic,Lao People's Democratic Republic,1955-12-14
+"Lao People's Democratic Republic","Lao People's Democratic Republic",1955-12-14
 Latvia,Republic of Latvia,1991-09-17
 Lebanon,Lebanese Republic,1945-10-24
 Lesotho,Kingdom of Lesotho,1966-10-17
@@ -111,11 +110,11 @@ Malaysia,Malaysia,1957-09-17
 Maldives,Republic of Maldives,1965-09-21
 Mali,Republic of Mali,1960-09-28
 Malta,Republic of Malta,1964-12-01
-Marshall Islands,Republic of the Marshall Islands,1991-09-17
+"Marshall Islands","Republic of the Marshall Islands",1991-09-17
 Mauritania,Islamic Republic of Mauritania,1961-10-27
 Mauritius,Republic of Mauritius,1968-04-24
 Mexico,United Mexican States,1945-11-07
-Micronesia,Federated States of Micronesia,1991-09-17
+Micronesia,"Federated States of Micronesia",1991-09-17
 Monaco,Principality of Monaco,1993-05-28
 Mongolia,Mongolia,1961-10-27
 Montenegro,Montenegro,2006-06-28
@@ -126,117 +125,81 @@ Namibia,Republic of Namibia,1990-04-23
 Nauru,Republic of Nauru,1999-09-14
 Nepal,Federal Democratic Republic of Nepal,1955-12-14
 Netherlands,Kingdom of the Netherlands,1945-12-10
-New Zealand,New Zealand,1945-10-24
+"New Zealand","New Zealand",1945-10-24
 Nicaragua,Republic of Nicaragua,1945-10-24
 Niger,Republic of the Niger,1960-09-20
 Nigeria,Federal Republic of Nigeria,1960-10-07
-North Macedonia,Republic of North Macedonia,1993-04-08
+"North Macedonia","Republic of North Macedonia",1993-04-08
 Norway,Kingdom of Norway,1945-11-27
 Oman,Sultanate of Oman,1971-10-07
 Pakistan,Islamic Republic of Pakistan,1947-09-30
 Palau,Republic of Palau,1994-12-15
 Palestine,State of Palestine,2012-11-29
 Panama,Republic of Panama,1945-11-13
-Papua New Guinea,Independent State of Papua New Guinea,1975-10-10
+"Papua New Guinea","Independent State of Papua New Guinea",1975-10-10
 Paraguay,Republic of Paraguay,1945-10-24
 Peru,Republic of Peru,1945-10-31
 Philippines,Republic of the Philippines,1945-10-24
 Poland,Republic of Poland,1945-10-24
 Portugal,Portuguese Republic,1955-12-14
 Qatar,State of Qatar,1971-09-21
-Republic of Korea,Republic of Korea,1991-09-17
-Republic of Moldova,Republic of Moldova,1992-03-02
+"Republic of Korea","Republic of Korea",1991-09-17
+"Republic of Moldova","Republic of Moldova",1992-03-02
 Romania,Romania,1955-12-14
-Russian Federation,Russian Federation,1945-10-24
+"Russian Federation","Russian Federation",1945-10-24
 Rwanda,Republic of Rwanda,1962-09-18
-Saint Kitts and Nevis,Federation of Saint Kitts and Nevis,1983-09-23
-Saint Lucia,Saint Lucia,1979-09-18
-Saint Vincent and the Grenadines,Saint Vincent and the Grenadines,1980-09-16
+"Saint Kitts and Nevis","Federation of Saint Kitts and Nevis",1983-09-23
+"Saint Lucia","Saint Lucia",1979-09-18
+"Saint Vincent and the Grenadines","Saint Vincent and the Grenadines",1980-09-16
 Samoa,Independent State of Samoa,1976-12-15
-San Marino,Republic of San Marino,1992-03-02
-Sao Tome and Principe,Democratic Republic of Sao Tome and Principe,1975-09-16
-Saudi Arabia,Kingdom of Saudi Arabia,1945-10-24
+"San Marino","Republic of San Marino",1992-03-02
+"Sao Tome and Principe","Democratic Republic of Sao Tome and Principe",1975-09-16
+"Saudi Arabia","Kingdom of Saudi Arabia",1945-10-24
 Senegal,Republic of Senegal,1960-09-28
 Serbia,Republic of Serbia,2000-11-01
 Seychelles,Republic of Seychelles,1976-09-21
-Sierra Leone,Republic of Sierra Leone,1961-09-27
+"Sierra Leone","Republic of Sierra Leone",1961-09-27
 Singapore,Republic of Singapore,1965-09-21
 Slovakia,Slovak Republic,1993-01-19
 Slovenia,Republic of Slovenia,1992-05-22
-Solomon Islands,Solomon Islands,1978-09-19
+"Solomon Islands","Solomon Islands",1978-09-19
 Somalia,Federal Republic of Somalia,1960-09-20
-South Africa,Republic of South Africa,1945-11-07
-South Sudan,Republic of South Sudan,2011-07-14
+"South Africa","Republic of South Africa",1945-11-07
+"South Sudan","Republic of South Sudan",2011-07-14
 Spain,Kingdom of Spain,1955-12-14
-Sri Lanka,Democratic Socialist Republic of Sri Lanka,1955-12-14
+"Sri Lanka","Democratic Socialist Republic of Sri Lanka",1955-12-14
 Sudan,Republic of the Sudan,1956-11-12
 Suriname,Republic of Suriname,1975-12-04
 Sweden,Kingdom of Sweden,1946-11-19
 Switzerland,Swiss Confederation,2002-09-10
-Syrian Arab Republic,Syrian Arab Republic,1945-10-24
+"Syrian Arab Republic","Syrian Arab Republic",1945-10-24
 Tajikistan,Republic of Tajikistan,1992-03-02
 Thailand,Kingdom of Thailand,1946-12-16
-Timor-Leste,Democratic Republic of Timor-Leste,2002-09-27
+"Timor-Leste","Democratic Republic of Timor-Leste",2002-09-27
 Togo,Togolese Republic,1960-09-20
 Tonga,Kingdom of Tonga,1999-09-14
-Trinidad and Tobago,Republic of Trinidad and Tobago,1962-09-18
+"Trinidad and Tobago","Republic of Trinidad and Tobago",1962-09-18
 Tunisia,Republic of Tunisia,1956-11-12
 Turkey,Republic of Turkey,1945-10-24
 Turkmenistan,Turkmenistan,1992-03-02
 Tuvalu,Tuvalu,2000-09-05
 Uganda,Republic of Uganda,1962-10-25
 Ukraine,Ukraine,1945-10-24
-United Arab Emirates,United Arab Emirates,1971-12-09
-United Kingdom,United Kingdom of Great Britain and Northern Ireland,1945-10-24
-United Republic of Tanzania,United Republic of Tanzania,1961-12-14
-United States of America,United States of America,1945-10-24
+"United Arab Emirates","United Arab Emirates",1971-12-09
+"United Kingdom","United Kingdom of Great Britain and Northern Ireland",1945-10-24
+"United Republic of Tanzania","United Republic of Tanzania",1961-12-14
+"United States of America","United States of America",1945-10-24
 Uruguay,Eastern Republic of Uruguay,1945-12-18
 Uzbekistan,Republic of Uzbekistan,1992-03-02
 Vanuatu,Republic of Vanuatu,1981-09-15
 Venezuela,Bolivarian Republic of Venezuela,1945-11-15
-Viet Nam,Socialist Republic of Viet Nam,1977-09-20
+"Viet Nam","Socialist Republic of Viet Nam",1977-09-20
 Yemen,Republic of Yemen,1947-09-30
 Zambia,Republic of Zambia,1964-12-01
 Zimbabwe,Republic of Zimbabwe,1980-08-25`;
 
-try {
-    const data = d3.csvParse(csvData);
-
-    if (!data || data.length === 0) {
-        document.getElementById('timeline-chart').innerHTML = `<p class="text-red-500 text-center">Error: Embedded data is empty or invalid.</p>`;
-        return;
-    }
-    
-    const parseDate = d3.timeParse("%Y-%m-%d");
-
-    const processedData = data.map(d => {
-        return {
-            country: d['Country'],
-            joinDate: parseDate(d['UN Membership Date']) 
-        };
-    }).filter(d => d && d.country && d.joinDate);
-
-    if (processedData.length === 0) {
-            document.getElementById('timeline-chart').innerHTML = `<p class="text-red-500 text-center">Error: No valid date data could be processed from embedded data. Please ensure the 'UN Membership Date' column is in the YYYY-MM-DD format.</p>`;
-            return;
-    }
-    
-    document.getElementById('loading-message').remove();
-
-    const dataByYear = d3.group(processedData, d => d.joinDate.getFullYear());
-    const years = Array.from(dataByYear.keys()).sort((a, b) => a - b);
-
-    let cumulativeCount = 0;
-    const cumulativeData = years.map(year => {
-        const countriesInYear = dataByYear.get(year);
-        cumulativeCount += countriesInYear.length;
-        return {
-            year: year,
-            newMembersCount: countriesInYear.length,
-            countries: countriesInYear.map(c => c.country).sort(),
-            cumulativeCount: cumulativeCount
-        };
-    });
+    let activeChartMode = 'cumulative'; // 'cumulative' or 'perYear'
+    let fullData;
 
     const margin = { top: 20, right: 60, bottom: 50, left: 80 };
     const chartContainer = d3.select("#timeline-chart");
@@ -249,71 +212,147 @@ try {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
     
+    // Define scales and axes globally within the scope
+    const x = d3.scaleLinear().range([0, width]);
+    const y = d3.scaleLinear().range([height, 0]);
+    const r = d3.scaleSqrt().range([5, 15]);
+
+    const xAxis = d3.axisBottom(x).tickFormat(d3.format("d"));
+    const yAxis = d3.axisLeft(y);
+
+    const xAxisGroup = svg.append("g").attr("transform", `translate(0,${height})`).attr("class", "axis");
+    const yAxisGroup = svg.append("g").attr("class", "axis");
+    const gridlineGroup = svg.append("g").attr("class", "gridline");
+    const yAxisLabel = svg.append("text").attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("y", -margin.left + 20).attr("x", -height / 2).attr("class", "text-gray-700 font-medium");
+    svg.append("text").attr("text-anchor", "middle").attr("x", width / 2).attr("y", height + margin.bottom - 10).attr("class", "text-gray-700 font-medium").text("Year of Admission");
+
+    // Define gradient for the area chart
     const gradient = svg.append("defs").append("linearGradient")
         .attr("id", "area-gradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "0%").attr("y2", "100%");
+        .attr("x1", "0%").attr("y1", "0%").attr("x2", "0%").attr("y2", "100%");
     gradient.append("stop").attr("offset", "0%").attr("stop-color", "#3b82f6").attr("stop-opacity", 0.4);
     gradient.append("stop").attr("offset", "100%").attr("stop-color", "#3b82f6").attr("stop-opacity", 0);
 
-    const x = d3.scaleLinear()
-        .domain(d3.extent(cumulativeData, d => d.year)).nice()
-        .range([0, width]);
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(cumulativeData, d => d.cumulativeCount)])
-        .nice()
-        .range([height, 0]);
-    const r = d3.scaleSqrt()
-        .domain([1, d3.max(cumulativeData, d => d.newMembersCount)])
-        .range([5, 15]);
-
-    svg.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x).tickFormat(d3.format("d"))).attr("class", "axis");
-    svg.append("g").call(d3.axisLeft(y)).attr("class", "axis");
-    svg.append("g").attr("class", "gridline").call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
-    svg.append("text").attr("text-anchor", "middle").attr("x", width / 2).attr("y", height + margin.bottom - 10).attr("class", "text-gray-700 font-medium").text("Year of Admission");
-    svg.append("text").attr("text-anchor", "middle").attr("transform", "rotate(-90)").attr("y", -margin.left + 20).attr("x", -height / 2).attr("class", "text-gray-700 font-medium").text("Cumulative Number of UN Members");
-
-    const area = d3.area().x(d => x(d.year)).y0(height).y1(d => y(d.cumulativeCount)).curve(d3.curveMonotoneX);
-    svg.append("path").datum(cumulativeData).attr("class", "area").attr("d", area);
-    
-    const dots = svg.selectAll(".timeline-dot").data(cumulativeData).enter().append("circle")
-        .attr("class", "timeline-dot")
-        .attr("cx", d => x(d.year))
-        .attr("cy", d => y(d.cumulativeCount))
-        .attr("r", d => r(d.newMembersCount));
-
     const tooltip = d3.select("#tooltip");
+    const selectedInfoPanel = d3.select("#selected-info-panel");
 
-    dots.on("mouseover", function(event, d) {
-        if (!d3.select(this).classed("selected")) {
-            d3.select(this).transition().duration(150).attr('r', r(d.newMembersCount) + 5);
-        }
-        tooltip.style("visibility", "visible")
-            .html(`
-                <div class="font-bold text-lg text-blue-600">${d.year}</div>
-                <hr class="my-2 border-gray-300">
-                <p><strong>New Members:</strong> ${d.newMembersCount}</p>
-                <p><strong>Total Members:</strong> ${d.cumulativeCount}</p>
-                <p class="font-semibold mt-3 mb-1">Countries Admitted:</p>
-                <ul class="list-disc list-inside max-h-48 overflow-y-auto text-sm text-gray-700">
-                    ${d.countries.map(c => `<li>${c}</li>`).join('')}
-                </ul>
-            `);
-    })
-    .on("mousemove", (event) => {
-        tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 15) + "px");
-    })
-    .on("mouseout", function(event, d) {
-        if (!d3.select(this).classed("selected")) {
+    function processData(csv) {
+        const data = d3.csvParse(csv);
+        const parseDate = d3.timeParse("%Y-%m-%d");
+        const processed = data.map(d => ({
+            country: d['Country'],
+            joinDate: parseDate(d['UN Membership Date']) 
+        })).filter(d => d.country && d.joinDate);
+        
+        const dataByYear = d3.group(processed, d => d.joinDate.getFullYear());
+        const years = Array.from(dataByYear.keys()).sort((a, b) => a - b);
+
+        let cumulativeCount = 0;
+        return years.map(year => {
+            const countriesInYear = dataByYear.get(year);
+            cumulativeCount += countriesInYear.length;
+            return {
+                year: year,
+                newMembersCount: countriesInYear.length,
+                countries: countriesInYear.map(c => c.country).sort(),
+                cumulativeCount: cumulativeCount
+            };
+        });
+    }
+
+    function updateChart(mode) {
+        activeChartMode = mode;
+        const yValue = d => (mode === 'cumulative') ? d.cumulativeCount : d.newMembersCount;
+        const yLabel = (mode === 'cumulative') ? "Cumulative Number of UN Members" : "New Members Per Year";
+
+        y.domain([0, d3.max(fullData, yValue)]).nice();
+        r.domain([1, d3.max(fullData, d => d.newMembersCount)]);
+
+        yAxisGroup.transition().duration(750).call(yAxis);
+        gridlineGroup.transition().duration(750).call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
+        yAxisLabel.text(yLabel);
+
+        const area = d3.area().x(d => x(d.year)).y0(height).y1(d => y(yValue(d))).curve(d3.curveMonotoneX);
+
+        svg.select(".area")
+            .transition().duration(750)
+            .attr("d", area);
+
+        svg.selectAll(".timeline-dot")
+            .transition().duration(750)
+            .attr("cy", d => y(yValue(d)))
+            .attr("r", d => r(d.newMembersCount));
+    }
+
+    function drawChart() {
+        document.getElementById('loading-message').remove();
+        
+        x.domain(d3.extent(fullData, d => d.year)).nice();
+        xAxisGroup.call(xAxis);
+
+        svg.append("path").datum(fullData).attr("class", "area");
+
+        const dots = svg.selectAll(".timeline-dot")
+            .data(fullData)
+            .enter().append("circle")
+            .attr("class", "timeline-dot")
+            .attr("cx", d => x(d.year));
+            
+        updateChart('cumulative'); // Initial draw
+
+        dots.on("mouseover", function(event, d) {
+            d3.select(this).raise();
+            if (!d3.select(this).classed("selected")) {
+                d3.select(this).transition().duration(150).attr('r', r(d.newMembersCount) + 5);
+            }
+            const tooltipHtml = getTooltipHtml(d);
+            tooltip.style("visibility", "visible").html(tooltipHtml);
+        })
+        .on("mousemove", (event) => {
+            tooltip.style("top", (event.pageY - 10) + "px").style("left", (event.pageX + 15) + "px");
+        })
+        .on("mouseout", function(event, d) {
+            if (!d3.select(this).classed("selected")) {
                 d3.select(this).transition().duration(150).attr('r', r(d.newMembersCount));
-        }
-        tooltip.style("visibility", "hidden");
-    });
+            }
+            tooltip.style("visibility", "hidden");
+        })
+        .on("click", function(event, d) {
+            svg.selectAll('.timeline-dot').classed("selected", false).attr("r", d => r(d.newMembersCount));
+            d3.select(this).classed("selected", true).attr('r', r(d.newMembersCount) + 5).raise();
+            
+            const infoHtml = getTooltipHtml2(d);
+            selectedInfoPanel.html(infoHtml).classed("hidden", false);
+            
+            fetchAndDisplayInsights(d);
+        });
+    }
 
-    dots.on("click", async function(event, d) {
-        dots.classed("selected", false).attr("r", d => r(d.newMembersCount));
-        d3.select(this).classed("selected", true).attr('r', r(d.newMembersCount) + 5).raise();
+    function getTooltipHtml(d) {
+        const titleColor = activeChartMode === 'cumulative' ? 'text-blue-500' : 'text-green-500';
+        return `
+            <div class="font-bold text-xl mb-2 ${titleColor}">${d.year}</div>
+            <hr class="my-2 border-gray-300 dark:border-gray-600">
+            <p><strong>New Members:</strong> ${d.newMembersCount}</p>
+            <p><strong>Total Members by end of year:</strong> ${d.cumulativeCount}</p>
+        `;
+    }
 
+    function getTooltipHtml2(d) {
+        const titleColor = activeChartMode === 'cumulative' ? 'text-blue-500' : 'text-green-500';
+        return `
+            <div class="font-bold text-xl mb-2 ${titleColor}">${d.year}</div>
+            <hr class="my-2 border-gray-300 dark:border-gray-600">
+            <p><strong>New Members:</strong> ${d.newMembersCount}</p>
+            <p><strong>Total Members by end of year:</strong> ${d.cumulativeCount}</p>
+            <p class="font-semibold mt-3 mb-1">Countries Admitted:</p>
+            <ul class="list-disc list-inside max-h-48 overflow-y-auto text-sm text-gray-700 dark:text-gray-300">
+                ${d.countries.map(c => `<li>${c}</li>`).join('')}
+            </ul>
+        `;
+    }
+
+    async function fetchAndDisplayInsights(d) {
         const insightsContainer = document.getElementById('insights-container');
         insightsContainer.classList.remove('hidden');
         document.getElementById('insights-year').textContent = d.year;
@@ -323,21 +362,56 @@ try {
         document.getElementById('insights-error').classList.add('hidden');
         
         insightsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
         await fetchGeopoliticalInsights(d.year, d.countries);
+    }
+    
+    // Setup controls
+    d3.select('#cumulative-btn').on('click', function() {
+        d3.select(this).classed('active', true);
+        d3.select('#per-year-btn').classed('active', false);
+        updateChart('cumulative');
     });
 
-} catch (error) {
-    console.error("Error loading or processing data:", error);
-    document.getElementById('timeline-chart').innerHTML = `<p class="text-red-500 text-center">An unexpected error occurred. Please check the console for details.</p>`;
-}
+    d3.select('#per-year-btn').on('click', function() {
+        d3.select(this).classed('active', true);
+        d3.select('#cumulative-btn').classed('active', false);
+        updateChart('perYear');
+    });
+
+    d3.select('#search-input').on('keyup', function(event) {
+        const searchTerm = event.target.value.trim().toLowerCase();
+        svg.selectAll('.timeline-dot').classed("highlighted", false);
+
+        if (searchTerm.length > 2) {
+            const matchedYear = fullData.find(d => d.countries.some(c => c.toLowerCase().includes(searchTerm)));
+            if (matchedYear) {
+                svg.selectAll('.timeline-dot')
+                    .filter(d => d.year === matchedYear.year)
+                    .classed("highlighted", true)
+                    .raise();
+            }
+        }
+    });
+
+    // --- Initial Load ---
+    try {
+        fullData = processData(csvData);
+        drawChart();
+    } catch (error) {
+        console.error("Error loading or processing data:", error);
+        document.getElementById('timeline-chart').innerHTML = `<p class="text-red-500 text-center">An unexpected error occurred. Please check the console for details.</p>`;
+    }
+});
 
 
 async function fetchGeopoliticalInsights(year, countries) {
-    const prompt = `Provide a brief summary of the major geopolitical events and global climate in the year ${year}. The following countries joined the United Nations this year: ${countries.join(', ')}. Briefly analyze if their admission is related to any major global trends of that time, like decolonization, post-war settlements, or the end of the Cold War. Keep the summary concise and accessible.`;
+    const prompt = `Provide a brief summary of the major geopolitical events and global climate in the year ${year}. The following countries joined the United Nations this year: ${countries.join(', ')}. Briefly analyze if their admission is related to any major global trends of that time, like decolonization, post-war settlements, or the end of the Cold War. Keep the summary concise and accessible. Format the key points in markdown.`;
     
     const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
     const payload = { contents: chatHistory };
+    // IMPORTANT: In a real application, the API key should be handled securely,
+    // for example, through a backend proxy or environment variables.
+    // It is left empty here as per instructions for the execution environment.
     const apiKey = "AIzaSyDgHp6xWdWVMTefm02oViW7lUNpx4Ud8tg"; 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
@@ -350,27 +424,23 @@ async function fetchGeopoliticalInsights(year, countries) {
 
         if (!response.ok) {
             const errorBody = await response.text();
-            throw new Error(`API request failed with status ${response.status} ${response.statusText}. Response: ${errorBody}`);
+            throw new Error(`API request failed with status ${response.status}. Response: ${errorBody}`);
         }
         
         const result = await response.json();
 
         let text = 'No content received from the API.';
-        if (result.candidates && result.candidates.length > 0 &&
-            result.candidates[0].content && result.candidates[0].content.parts &&
-            result.candidates[0].content.parts.length > 0) {
+        if (result.candidates && result.candidates[0]?.content?.parts?.[0]) {
             text = result.candidates[0].content.parts[0].text;
         } else {
             console.warn("Unexpected API response structure:", result);
-            if(result.error) {
-                throw new Error(result.error.message);
-            }
+            if(result.error) throw new Error(result.error.message);
         }
         
         const formattedText = text
             .split('\n')
             .filter(p => p.trim() !== '')
-            .map(p => `<p class="mb-4">${p.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')}</p>`)
+            .map(p => `<p class="mb-4">${p.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}</p>`)
             .join('');
 
         document.getElementById('insights-content').innerHTML = formattedText;
@@ -385,4 +455,3 @@ async function fetchGeopoliticalInsights(year, countries) {
         document.getElementById('insights-loading').classList.add('hidden');
     }
 }
-});

@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: #f0f4f8;
 }
+
 /* Custom styles for the chart */
 .gridline path,
 .gridline line {
@@ -10,45 +12,91 @@ body {
     stroke: #e2e8f0;
     shape-rendering: crispEdges;
 }
+
 .axis path,
 .axis line {
     fill: none;
     stroke: #4a5568;
     shape-rendering: crispEdges;
 }
+
 .axis text {
     font-size: 12px;
     fill: #4a5568;
 }
+
 .area {
     fill: url(#area-gradient);
     stroke-width: 2px;
     stroke: #3b82f6;
 }
+
 .timeline-dot {
     fill: #3b82f6;
     stroke: white;
     stroke-width: 2px;
-    transition: r 0.2s ease-in-out, fill 0.2s ease-in-out;
+    transition: r 0.2s ease-in-out, fill 0.2s ease-in-out, stroke 0.2s ease-in-out, stroke-width 0.2s ease-in-out;
     cursor: pointer;
 }
+
 .timeline-dot:hover, .timeline-dot.selected {
-    fill: #ef4444;
+    fill: #ef4444; /* Red for selected/hover */
 }
+
+.timeline-dot.highlighted {
+    fill: #f59e0b; /* Amber for search highlight */
+    stroke: #b45309;
+    stroke-width: 3px;
+    r: 15px; /* Increase radius for highlight */
+}
+
 #tooltip {
     position: absolute;
     z-index: 10;
     visibility: hidden;
-    background-color: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(5px);
+    background-color: rgba(17, 24, 39, 0.9); /* Darker tooltip */
+    color: white;
     max-width: 300px;
     padding: 1rem;
     font-size: 0.875rem;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #4b5563;
     border-radius: 0.5rem;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transition: opacity 0.2s;
+    pointer-events: none; /* Important for mouse events to pass through */
 }
+
+#selected-info-panel {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.toggle-btn {
+    padding: 0.5rem 1.25rem;
+    border: none;
+    background-color: transparent;
+    color: #4b5563;
+    font-weight: 500;
+    border-radius: 9999px; /* pill shape */
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.toggle-btn.active {
+    background-color: white;
+    color: #1d4ed8;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 /* Added for prose styling on Gemini output */
 #insights-content p {
     margin-bottom: 1rem;
