@@ -25,11 +25,17 @@
 
     <div id="page-content" class="h-screen w-screen flex flex-col" style="display: none;">
         <div id="app" class="h-full w-full flex flex-col">
-            <header class="bg-gray-800 text-white p-4 flex items-center shadow-md z-20 flex-shrink-0">
-                <button id="sidebar-toggle" class="p-2 mr-4 rounded-md hover:bg-gray-700 md:hidden">
-                    <i data-lucide="filter" class="w-5 h-5"></i>
-                </button>
-                <h1 class="text-xl font-bold">UN Bluebook Interactive Data</h1>
+            <header class="bg-gray-800 text-white p-4 flex items-center justify-between shadow-md z-20 flex-shrink-0">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="p-2 mr-4 rounded-md hover:bg-gray-700 md:hidden">
+                        <i data-lucide="filter" class="w-5 h-5"></i>
+                    </button>
+                    <h1 class="text-xl font-bold">UN Bluebook Interactive Data</h1>
+                </div>
+                <a href="index.html" class="text-sm font-medium text-white hover:text-gray-300 flex items-center">
+                    <i data-lucide="home" class="w-4 h-4 mr-2"></i>
+                    Back to Home
+                </a>
             </header>
 
             <div class="flex flex-1 overflow-hidden">
