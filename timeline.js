@@ -274,11 +274,11 @@ Zimbabwe,Republic of Zimbabwe,1980-08-25`;
 
         const area = d3.area().x(d => x(d.year)).y0(height).y1(d => y(yValue(d))).curve(d3.curveMonotoneX);
 
-        svg.select(".area")
+        svg.select(".chart-body .area")
             .transition().duration(750)
             .attr("d", area);
 
-        svg.selectAll(".timeline-dot")
+        svg.select(".chart-body").selectAll(".timeline-dot")
             .transition().duration(750)
             .attr("cy", d => y(yValue(d)))
             .attr("r", d => r(d.newMembersCount));
@@ -290,16 +290,51 @@ Zimbabwe,Republic of Zimbabwe,1980-08-25`;
         x.domain(d3.extent(fullData, d => d.year)).nice();
         xAxisGroup.call(xAxis);
 
-        svg.append("path").datum(fullData).attr("class", "area");
+        // Set initial y-axis for cumulative view
+        y.domain([0, d3.max(fullData, d => d.cumulativeCount)]).nice();
+        yAxisGroup.call(yAxis);
+        gridlineGroup.call(d3.axisLeft(y).tickSize(-width).tickFormat(""));
+        yAxisLabel.text("Cumulative Number of UN Members");
 
-        const dots = svg.selectAll(".timeline-dot")
+        // Define the clip path for the animation
+        svg.append("defs").append("clipPath")
+            .attr("id", "chart-clip")
+            .append("rect")
+            .attr("width", 0)
+            .attr("height", height);
+
+        // Create a group for the elements that will be animated
+        const chartBody = svg.append("g")
+            .attr("class", "chart-body")
+            .attr("clip-path", "url(#chart-clip)");
+
+        // Draw the initial state of the area and dots
+        const initialYValue = d => d.cumulativeCount;
+        const areaGenerator = d3.area().x(d => x(d.year)).y0(height).y1(d => y(initialYValue(d))).curve(d3.curveMonotoneX);
+        
+        chartBody.append("path")
+            .datum(fullData)
+            .attr("class", "area")
+            .attr("d", areaGenerator);
+
+        r.domain([1, d3.max(fullData, d => d.newMembersCount)]);
+
+        const dots = chartBody.selectAll(".timeline-dot")
             .data(fullData)
             .enter().append("circle")
             .attr("class", "timeline-dot")
-            .attr("cx", d => x(d.year));
+            .attr("cx", d => x(d.year))
+            .attr("cy", d => y(initialYValue(d)))
+            .attr("r", d => r(d.newMembersCount));
             
-        updateChart('cumulative'); // Initial draw
-
+        // Start the reveal animation
+        svg.select("#chart-clip rect")
+            .transition()
+            .duration(3000) // 3-second animation duration
+            .ease(d3.easeLinear)
+            .attr("width", width);
+            
+        // Setup event handlers for dots
         dots.on("mouseover", function(event, d) {
             d3.select(this).raise();
             if (!d3.select(this).classed("selected")) {
@@ -321,7 +356,7 @@ Zimbabwe,Republic of Zimbabwe,1980-08-25`;
             svg.selectAll('.timeline-dot').classed("selected", false).attr("r", d => r(d.newMembersCount));
             d3.select(this).classed("selected", true).attr('r', r(d.newMembersCount) + 5).raise();
             
-            const infoHtml = getTooltipHtml2(d);
+            const infoHtml = getTooltipHtmlDetails(d);
             selectedInfoPanel.html(infoHtml).classed("hidden", false);
             
             fetchAndDisplayInsights(d);
@@ -338,7 +373,7 @@ Zimbabwe,Republic of Zimbabwe,1980-08-25`;
         `;
     }
 
-    function getTooltipHtml2(d) {
+    function getTooltipHtmlDetails(d) {
         const titleColor = activeChartMode === 'cumulative' ? 'text-blue-500' : 'text-green-500';
         return `
             <div class="font-bold text-xl mb-2 ${titleColor}">${d.year}</div>
@@ -409,10 +444,7 @@ async function fetchGeopoliticalInsights(year, countries) {
     
     const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
     const payload = { contents: chatHistory };
-    // IMPORTANT: In a real application, the API key should be handled securely,
-    // for example, through a backend proxy or environment variables.
-    // It is left empty here as per instructions for the execution environment.
-    const apiKey = "AIzaSyDgHp6xWdWVMTefm02oViW7lUNpx4Ud8tg"; 
+    const apiKey = "AIzaSyDgHp6xWdWVMTefm02oViW7lUNpx4Ud8tg";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     try {
