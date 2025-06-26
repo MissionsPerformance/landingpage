@@ -1,0 +1,92 @@
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+.tab-button.active {
+    border-color: #3b82f6; /* blue-500 */
+    color: #3b82f6;
+}
+/* Custom styles for Plotly chart responsiveness */
+.js-plotly-plot .plotly .modebar {
+    top: -10px !important;
+}
+/* Style for color input */
+input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 40px;
+    height: 32px;
+    padding: 0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+/* Spotlight Modal Styles */
+#spotlight-modal {
+    transition: opacity 0.3s ease;
+}
+#spotlight-modal:not(.hidden) {
+    display: flex; /* Use flex for centering */
+}
+#spotlight-content {
+    transition: transform 0.3s ease;
+    transform: scale(0.95);
+}
+#spotlight-modal:not(.hidden) #spotlight-content {
+    transform: scale(1);
+}
+/* Flag icon sizing */
+.fi {
+    line-height: 1;
+    background-size: contain;
+    background-position: 50%;
+    background-repeat: no-repeat;
+}
+/* Table sort indicator */
+.sortable-header {
+    cursor: pointer;
+}
+.sortable-header:hover {
+    color: #3b82f6;
+}
+/* Modal tab styles */
+.modal-tab-button.active {
+    border-color: #3b82f6;
+    background-color: #3b82f6;
+    color: white;
+}
+/* Password Modal Styles */
+.password-modal {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 51; /* Higher than other content */
+}
+.password-modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 0.5rem; /* rounded-lg */
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-2xl */
+}
