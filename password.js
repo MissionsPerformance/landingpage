@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const password = "2025June27UN";
+    const password = "NewYork2025";
 
     const modal = document.getElementById('password-modal');
     const passwordForm = document.getElementById('password-form');
