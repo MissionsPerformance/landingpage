@@ -12,13 +12,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const navLinks = document.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
+                if (mobileMenu.classList.contains('active')) {
+                    mobileMenu.classList.remove('active');
+                }
             });
         });
         
         // Close mobile menu when clicking outside
         document.addEventListener('click', function(event) {
-            if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+            if (mobileMenu.classList.contains('active') && !mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
                 mobileMenu.classList.remove('active');
             }
         });
@@ -77,24 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
       );
     });
   });
-});
 
-// Toast notification system
-function showToast(title, description) {
-    const toast = document.getElementById('toast');
-    const toastTitle = toast.querySelector('.toast-title');
-    const toastDescription = toast.querySelector('.toast-description');
-    
-    toastTitle.textContent = title;
-    toastDescription.textContent = description;
-    
-    toast.classList.remove('hidden');
-    
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 4000);
-}
-    
     // Header scroll effect
     const header = document.querySelector('.header');
     let lastScrollTop = 0;
@@ -112,3 +97,19 @@ function showToast(title, description) {
         lastScrollTop = scrollTop;
     });
 });
+
+// Toast notification system
+function showToast(title, description) {
+    const toast = document.getElementById('toast');
+    const toastTitle = toast.querySelector('.toast-title');
+    const toastDescription = toast.querySelector('.toast-description');
+    
+    toastTitle.textContent = title;
+    toastDescription.textContent = description;
+    
+    toast.classList.remove('hidden');
+    
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 4000);
+}
