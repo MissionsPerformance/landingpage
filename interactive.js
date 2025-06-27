@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
             textinfo: 'label+percent', textposition: 'inside', hoverinfo: 'label+value'
         }];
         const pieLayout = {
-            title: 'Gender Distribution of Deployed Personnel',
+            title: 'Gender Distribution of Accredited Diplomats',
             height: 280, margin: { t: 50, b: 20, l: 20, r: 20 }, showlegend: true,
             legend: { x: 0.5, y: -0.1, xanchor: 'center', orientation: 'h'},
             paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
