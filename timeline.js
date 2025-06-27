@@ -134,7 +134,6 @@ Norway,Kingdom of Norway,1945-11-27
 Oman,Sultanate of Oman,1971-10-07
 Pakistan,Islamic Republic of Pakistan,1947-09-30
 Palau,Republic of Palau,1994-12-15
-Palestine,State of Palestine,2012-11-29
 Panama,Republic of Panama,1945-11-13
 "Papua New Guinea","Independent State of Papua New Guinea",1975-10-10
 Paraguay,Republic of Paraguay,1945-10-24
