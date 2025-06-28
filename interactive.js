@@ -55,11 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultState = {
         selectedMetrics: ['Female Count', 'Male Count'],
         metricColors: {
-            'Female Count': '#ff69b4',
-            'Male Count': '#1f77b4',
-            'Total Count': '#ff7f0e',
-            'Female Percent': '#2ca02c',
-            'Male Percent': '#d62728'
+            'Female Count': '#ceab5f',
+            'Male Count': '#163851',
+            'Total Count': '#bdbdbd',
+            'Female Percent': '#eaa510',
+            'Male Percent': '#1571b7'
         },
         chartType: 'stack',
         region: 'All',
