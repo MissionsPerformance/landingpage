@@ -439,7 +439,7 @@ Zimbabwe,Republic of Zimbabwe,1980-08-25`;
 
 
 async function fetchGeopoliticalInsights(year, countries) {
-    const prompt = `Provide a brief summary of the major geopolitical events and global climate in the year ${year}. The following countries joined the United Nations this year: ${countries.join(', ')}. Briefly analyze if their admission is related to any major global trends of that time, like decolonization, post-war settlements, or the end of the Cold War. Keep the summary concise and accessible. Format the key points in markdown.`;
+    const prompt = `Assume the persona of a historian. For the year ${year}, provide a concise summary of major geopolitical events and the global climate. The following countries joined the United Nations this year: ${countries.join(', ')}. Situate their admission within the broader historical context by analyzing the key global trends that influenced them joining. Keep the summary concise and accessible. Format the key points in markdown.`;
     
     const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
     const payload = { contents: chatHistory };
