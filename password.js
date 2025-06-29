@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Ensure this password is kept secure and not exposed in production environments
-    const password = "NewYork2025";
+    const password = "%%PASSWORD%%";
 
     const modal = document.getElementById('password-modal');
     const pageContent = document.getElementById('page-content');
