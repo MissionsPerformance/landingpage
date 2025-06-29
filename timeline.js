@@ -443,7 +443,7 @@ async function fetchGeopoliticalInsights(year, countries) {
     
     const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
     const payload = { contents: chatHistory };
-    const apiKey = "AIzaSyDgHp6xWdWVMTefm02oViW7lUNpx4Ud8tg";
+    const apiKey = "%%API_KEY%%";
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     try {
