@@ -193,7 +193,7 @@ main {
 }
 
 .hero-logo-img {
-    height: 120px;
+    height: 200px;
     width: auto;
 }
 
@@ -475,10 +475,6 @@ main {
     .footer-section {
         flex-direction: column;
         gap: 0.5rem;
-    }
-    
-    .hero-logo-img {
-        height: 80px;
     }
 }
 
