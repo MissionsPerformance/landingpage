@@ -255,9 +255,9 @@ main {
     box-shadow: var(--shadow-hover);
 }
 
-.feature-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+.feature-icon img {
+    height: auto;
+    max-width: 100%;
 }
 
 .feature-card h3 {
